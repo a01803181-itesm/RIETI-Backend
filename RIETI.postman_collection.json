@@ -1,0 +1,39 @@
+{
+  "info": {
+    "_postman_id": "568de5a6-fdd0-4b84-948c-6d1cef7bd48f",
+    "name": "RIETI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34417659"
+  },
+  "item": [
+    {
+      "name": "V1",
+      "item": [
+        {
+          "name": "/check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/v1/check",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "v1",
+                "check"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": ""
+    }
+  ]
+}
