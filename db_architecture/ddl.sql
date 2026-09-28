@@ -14,12 +14,14 @@ drop table if exists Evidencia;
 
 create table Usuario(
 correoU varchar(100) primary key,
-contrasenia varchar(32) not null
+contrasenia varchar(255),
+proveedor enum('local', 'google')
 );
 
 create table Admin(
 correoAd varchar(100) primary key,
-contrasenia varchar(32) not null,
+contrasenia varchar(255),
+proveedor enum('local', 'google'),
 nombre varchar(50) not null,
 ap_paterno varchar(64) not null, 
 ap_materno varchar(64) not null, 
@@ -28,7 +30,8 @@ telefono varchar(10) not null
 
 create table Alimentador(
 correoAl varchar(100) primary key,
-contrasenia varchar(32) not null,
+contrasenia varchar(255),
+proveedor enum('local', 'google'),
 telefono varchar(10) not null,
 nombre varchar(50) not null,
 ap_paterno varchar(64) not null, 
@@ -51,10 +54,13 @@ folio varchar(32) primary key,
 edad int(2),
 dia timestamp not null,
 tipoTrabajo varchar(50) not null,
-numNNA int(3),
+numNinios int(3),
 direccion varchar(100) not null,
 latitud DECIMAL(9,6) not null,
-longitud DECIMAL(9,6) not null,
+longitud DECIMAL(9,6) not null, 
+nombre varchar(50) not null,
+ap_paterno varchar(64) not null, 
+ap_materno varchar(64) not null, 
 correoU varchar(100),
 folioE varchar(32),
 correoAl varchar(100),
@@ -76,5 +82,4 @@ id int auto_increment primary key,
 url varchar(255) not null,
 folio varchar(32),
 foreign key (folio) references Reporte(folio)
-
 )

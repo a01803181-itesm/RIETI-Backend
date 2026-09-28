@@ -54,6 +54,162 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "/usuarios",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"correoU\": \"someone_else@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256 password\",\r\n    \"proveedor\": \"local\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/v1/usuarios",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "usuarios"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "/usuarios",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoU\": \"someone@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256_password\",\r\n    \"proveedor\": \"google\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 400 BAD REQUEST\r\nREASON: POST /usuarios body request MUST NOT contain 'contrasenia' attribute when the user is being provided by Google\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/usuarios",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "usuarios"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/usuarios",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoU\": \"someone@somewhere.com\",\r\n    \"proveedor\": \"local\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 400 BAD REQUEST\r\nREASON: POST /usuarios body request MUST contain 'contrasenia' attribute when the user is being provided locally\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/usuarios",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "usuarios"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/usuarios",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoU\": \"someone@somewhere.com\",\r\n    \"proveedor\": \"google\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 201 CREATED\r\nREASON: POST /usuarios body request MUST NOT contain 'contrasenia' attribute when the user is being provided by Google\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/usuarios",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "usuarios"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/usuarios",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoU\": \"someone_else@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256_password\",\r\n    \"proveedor\": \"local\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 201 CREATED\r\nREASON: POST /usuarios body request MUST contain 'contrasenia' attribute when the user is being provided locally\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/usuarios",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "usuarios"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
             }
           ]
         },
@@ -102,6 +258,162 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "/admins",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"correoAd\": \"someone_else@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256 password\",\r\n    \"proveedor\": \"local\",\r\n    \"nombre\": \"Nowhere\",\r\n    \"ap_paterno\": \"Tambourine\",\r\n    \"ap_materno\": \"Man\",\r\n    \"telefono\": \"5501234567\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/v1/admins",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "admins"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "/admins",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoAd\": \"someone@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256 password\",\r\n    \"proveedor\": \"google\",\r\n    \"nombre\": \"Nowhere\",\r\n    \"ap_paterno\": \"Tambourine\",\r\n    \"ap_materno\": \"Man\",\r\n    \"telefono\": \"5501234567\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 400 BAD REQUEST\r\nREASON: POST /admins body request MUST NOT contain 'contrasenia' attribute when the admin is being provided by Google\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/admins",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "admins"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/admins",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoAd\": \"someone@somewhere.com\",\r\n    \"proveedor\": \"local\",\r\n    \"nombre\": \"Nowhere\",\r\n    \"ap_paterno\": \"Tambourine\",\r\n    \"ap_materno\": \"Man\",\r\n    \"telefono\": \"5501234567\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 400 BAD REQUEST\r\nREASON: POST /admins body request MUST contain 'contrasenia' attribute when the admin is being provided by Google\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/admins",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "admins"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/admins",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoAd\": \"someone_else@somewhereelse.com\",\r\n    \"proveedor\": \"google\",\r\n    \"nombre\": \"Nowhere\",\r\n    \"ap_paterno\": \"Tambourine\",\r\n    \"ap_materno\": \"Man\",\r\n    \"telefono\": \"5501234567\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 201 CREATED\r\nREASON: POST /admins body request MUST NOT contain 'contrasenia' attribute when the admin is being provided by Google\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/admins",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "admins"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                },
+                {
+                  "name": "/admins",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n    \"correoAd\": \"someone@somewhere.com\",\r\n    \"contrasenia\": \"SHA-256 password\",\r\n    \"proveedor\": \"local\",\r\n    \"nombre\": \"Nowhere\",\r\n    \"ap_paterno\": \"Tambourine\",\r\n    \"ap_materno\": \"Man\",\r\n    \"telefono\": \"5501234567\"\r\n}\r\n/*\r\nEXPECTED OUTPUT: 201 CREATED\r\nREASON: POST /admins body request MUST contain 'contrasenia' attribute when the admin is being provided locally\r\n*/",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/v1/admins",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "admins"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "text",
+                  "header": null,
+                  "cookie": [],
+                  "body": ""
+                }
+              ]
             }
           ]
         },

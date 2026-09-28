@@ -5,6 +5,7 @@ from asyncmy import Connection as MySQLConnection
 from app.core.db_connection import get_db
 from app.schemas.usuario import PublicUsuario, Usuario
 from app.crud.usuario import select_user, select_all_users, insert_user
+from app.schemas.enums import Provider
 
 router = APIRouter()
 
@@ -33,6 +34,18 @@ async def register_new_user(
     user: Usuario,
     db: MySQLConnection = Depends(get_db)
 ) -> Any:
+    if user.proveedor == Provider.LOCAL and user.contrasenia is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User body request must contain a password if provided locally"
+        )
+
+    if user.proveedor == Provider.GOOGLE and user.contrasenia:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User body request must not contain a password if provided by Google"
+        )
+    
     new_user = await insert_user(db, user)
 
     if not new_user:
