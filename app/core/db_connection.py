@@ -17,5 +17,8 @@ connection: Connection = Connection(
 db_manager: MySQLManager = MySQLManager(connection)
 
 async def get_db() -> AsyncGenerator[MySQLAsyncConnection, None]:
-    async with db_manager.get_connection() as conn:
+    conn = await db_manager.pool.acquire()
+    try:
         yield conn
+    finally:
+        db_manager.pool.release(conn)

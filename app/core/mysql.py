@@ -32,6 +32,10 @@ class MySQLManager:
             autocommit=True
         )
 
+    @property
+    def pool(self) -> asyncmy.Pool | None:
+        return self.__pool
+
     async def close(self) -> None:
         if self.__pool:
             self.__pool.close()

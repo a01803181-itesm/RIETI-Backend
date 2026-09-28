@@ -14,11 +14,11 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | Non
 
     try:
         async with conn.cursor() as cur:
-            await cur.execute(query)
+            await cur.execute(query, (admin_email,))
 
-            row = cur.fetchone()
+            row = await cur.fetchone()
 
-            if not row:
+            if row:
                 log(LogType.SUCCESS, f"Admin with email {admin_email} successfully found and fetched from DB")
                 return Admin(
                     correoAd=row[0],
@@ -47,7 +47,7 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
         async with conn.cursor() as cur:
             await cur.execute(query)
 
-            rows = cur.fetchall()
+            rows = await cur.fetchall()
 
             if len(rows) > 0:
                 log(LogType.SUCCESS, f"Query successfully found Admin rows")
