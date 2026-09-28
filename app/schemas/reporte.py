@@ -10,9 +10,6 @@ class Reporte(BaseModel):
     direccion: str
     latitud: Latitude
     longitud: Longitude
-    nombre: str
-    ap_materno: str
-    ap_paterno: str
     correoU: EmailStr
     folioE: str
     correoAl: EmailStr
