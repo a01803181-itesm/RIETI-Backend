@@ -1,11 +1,7 @@
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLAsyncConnection
-import logging
 from app.schemas.usuario import PublicUsuario, Usuario
-from app.core.logs import LogType, log
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.core.logs import logger, SUCCESS
 
 async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> PublicUsuario | None:
     query = """
@@ -20,15 +16,15 @@ async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Public
             row = await cur.fetchone()
 
             if row:
-                log(LogType.SUCCESS, f"User with email {userEmail} successfully found and fetched from DB")
+                logger.log(SUCCESS, f"User with email {userEmail} successfully found and fetched from DB")
                 return PublicUsuario(
                     correoU=row[0]
                 )
 
-            log(LogType.WARNING, f"Could not find any user with email: {userEmail}")
+            logger.warning(f"Could not find any user with email: {userEmail}")
             return None
     except Exception as e:
-        log(LogType.ERROR, f"Error reading user with email: {userEmail}: {e}")
+        logger.error(f"Error reading user with email: {userEmail}: {e}")
         return None
 
 async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
@@ -44,7 +40,7 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
             rows = await cur.fetchall()
 
             if len(rows) > 0:
-                log(LogType.SUCCESS, "Select all users query successfully returned rows")
+                logger.log(SUCCESS, "Select all users query successfully returned rows")
                 return [
                     PublicUsuario(
                         correoU=row[0]
@@ -52,10 +48,10 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
                     for row in rows
                 ]
 
-            log(LogType.WARNING, "User entity is empty")
+            logger.warning("User entity is empty")
             return []
     except Exception as e:
-        log(LogType.ERROR, f"Error reading all users: {e}")
+        logger.error(f"Error reading all users: {e}")
 
 async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> PublicUsuario | None:
     query = """
@@ -69,11 +65,11 @@ async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> PublicUsuari
             await cur.execute(query, (user.correoU, user.contrasenia))
 
             if cur.rowcount == 1:
-                log(LogType.SUCCESS, f"User with email {user.correoU} successfully registered")
+                logger.log(SUCCESS, f"User with email {user.correoU} successfully registered")
                 return PublicUsuario(correoU=user.correoU)
 
-            log(LogType.ERROR, "New user insertion failed or affected 0 rows")
+            logger.error("New user insertion failed or affected 0 rows")
             return None
     except Exception as e:
-        log(LogType.ERROR, f"Error during new user insertion: {e}")
+        logger.error(f"Error during new user insertion: {e}")
         return None

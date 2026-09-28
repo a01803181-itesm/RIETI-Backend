@@ -1,7 +1,7 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from app.schemas.alimentador import Alimentador
-from app.core.logs import LogType, log
+from app.core.logs import logger, SUCCESS
 
 async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimentador | None:
     query = """
@@ -19,7 +19,7 @@ async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimen
             row = await cur.fetchone()
 
             if row:
-                log(LogType.SUCCESS, f"Alimentador with email {alim_email} successfully found and fetched")
+                logger.log(SUCCESS, f"Alimentador with email {alim_email} successfully found and fetched")
                 return Alimentador(
                     correoAl=row[0],
                     contrasenia=row[1],
@@ -30,10 +30,10 @@ async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimen
                     municipio=row[6]
                 )
 
-            log(LogType.WARNING, f"Alimentador with email {alim_email} not found")
+            logger.warning(f"Alimentador with email {alim_email} not found")
             return None
     except Exception as e:
-        log(LogType.ERROR, f"Error founding alimentador with email {alim_email}: {e}")
+        logger.error(f"Error founding alimentador with email {alim_email}: {e}")
         return None
 
 async def get_all_alimentadores(conn: MySQLConnection) -> list[Alimentador]:
@@ -51,7 +51,7 @@ async def get_all_alimentadores(conn: MySQLConnection) -> list[Alimentador]:
             rows = await cur.fetchall()
 
             if len(rows) > 0:
-                log(LogType.SUCCESS, f"All alimentadores rows where successfully fetched and returned")
+                logger.log(SUCCESS, f"All alimentadores rows where successfully fetched and returned")
                 return [
                     Alimentador(
                         correoAl=row[0],
@@ -65,8 +65,8 @@ async def get_all_alimentadores(conn: MySQLConnection) -> list[Alimentador]:
                     for row in rows
                 ]
 
-            log(LogType.WARNING, f"'Alimentador' DB entity is empty")
+            logger.warning(f"'Alimentador' DB entity is empty")
             return []
     except Exception as e:
-        log(LogType.ERROR, f"Error during fetching rows from 'Alimentador' DB entity: {e}")
+        logger.error(f"Error during fetching rows from 'Alimentador' DB entity: {e}")
         return []

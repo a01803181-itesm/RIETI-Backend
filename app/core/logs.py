@@ -1,23 +1,26 @@
 import logging
-from enum import Enum
+
+SUCCESS = 60
+
+logging.addLevelName(SUCCESS, "SUCCESS")
+
+class ColouredFormatter(logging.Formatter):
+    COLOURS = {
+        logging.INFO: "\x1b[36m",
+        logging.WARNING: "\x1b[33m",
+        logging.ERROR: "\x1b[31m",
+        SUCCESS: "\x1b[32m" 
+    }
+    RESET = "\x1b[0m"
+
+    def format(self, record):
+        colour = self.COLOURS.get(record.levelno, self.RESET)
+        record.levelname = f"{colour}{record.levelname}{self.RESET}"
+        record.msg = f"{colour}{record.msg}{self.RESET}"
+        return super().format(record)
+
+handler = logging.StreamHandler()
+handler.setFormatter(ColouredFormatter("[%(levelName)s] %(message)s"))
+logging.basicConfig(level=logging.INFO, handlers=[handler])
 
 logger = logging.getLogger(__name__)
-
-class LogType(str, Enum):
-    INFO = "INFO"
-    SUCCESS = "SUCCESS"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-
-def log(type: LogType, content: str) -> None:
-    match type:
-        case LogType.INFO:
-            logger.info(f'\x1b[36m[INFO]\x1b[0m - {content}')
-        case LogType.SUCCESS:
-            logger.info(f"\x1b[32m[SUCCESS]\x1b[0m - {content}")
-        case LogType.WARNING:
-            logger.warning(f"\x1b[33m[WARNING]\x1b[0m - {content}")
-        case LogType.ERROR:
-            logger.error(f"\x1b[31m[ERROR]\x1b[0m - {content}")
-        case _:
-            logger.info(f"\x1b[30m[UNKNOWN]\x1b[0m - {content}")

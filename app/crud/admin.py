@@ -1,7 +1,7 @@
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
 from app.schemas.admin import Admin
-from app.core.logs import LogType, log
+from app.core.logs import logger, SUCCESS
 
 async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | None:
     query = """
@@ -19,7 +19,7 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | Non
             row = await cur.fetchone()
 
             if row:
-                log(LogType.SUCCESS, f"Admin with email {admin_email} successfully found and fetched from DB")
+                logger.log(SUCCESS, f"Admin with email {admin_email} successfully found and fetched from DB")
                 return Admin(
                     correoAd=row[0],
                     contrasenia=row[1],
@@ -29,10 +29,10 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | Non
                     telefono=row[5]
                 )
 
-            log(LogType.WARNING, f"Admin with email {admin_email} not found")
+            logger.warning(f"Admin with email {admin_email} not found")
             return None
     except Exception as e:
-        log(LogType.ERROR, f"Error during fetching Admin with email {admin_email}: {e}")
+        logger.error(f"Error during fetching Admin with email {admin_email}: {e}")
         return None
 
 async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
@@ -50,7 +50,7 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
             rows = await cur.fetchall()
 
             if len(rows) > 0:
-                log(LogType.SUCCESS, f"Query successfully found Admin rows")
+                logger.log(SUCCESS, f"Query successfully found Admin rows")
                 return [
                     Admin(
                         correoAd=row[0],
@@ -63,8 +63,8 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
                     for row in rows
                 ]
 
-            log(LogType.WARNING, f"DB Entity 'Admin' has no rows")
+            logger.warning(f"DB Entity 'Admin' has no rows")
             return []
     except Exception as e:
-        log(LogType.ERROR, f"Error during fetching all Admin rows from DB: {e}")
+        logger.error(f"Error during fetching all Admin rows from DB: {e}")
         return []
