@@ -12,7 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Configure AWS credentials
+      - name: Check AWS secrets
+  run: |
+    echo "Access key exists: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}"
+    echo "Secret key exists: ${{ secrets.AWS_SECRET_ACCESS_KEY != '' }}"
+    echo "Session token exists: ${{ secrets.AWS_SESSION_TOKEN != '' }}"
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
