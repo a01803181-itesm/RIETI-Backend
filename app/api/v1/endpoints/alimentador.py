@@ -2,13 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
 from typing import Any
 from asyncmy import Connection as MySQLConnection
-from app.crud.alimentador import get_alimentador, get_all_alimentadores
-from app.schemas.alimentador import Alimentador
+from app.crud.alimentador import get_alimentador, get_all_alimentadores, insert_new_alimentador
+from app.schemas.alimentador import PublicAlimentador, Alimentador
 from app.core.db_connection import get_db
+from app.schemas.enums import Provider
 
 router = APIRouter()
 
-@router.get("/{alim_email}", response_model=Alimentador)
+@router.get("/{alim_email}", response_model=PublicAlimentador)
 async def read_alimentador_by_email(
     alim_email: EmailStr,
     db: MySQLConnection = Depends(get_db)
@@ -23,7 +24,33 @@ async def read_alimentador_by_email(
 
     return alimentador
 
-@router.get("", response_model=list[Alimentador])
+@router.get("", response_model=list[PublicAlimentador])
 async def read_all_alimentadores(db: MySQLConnection = Depends(get_db)) -> Any:
     alimentadores = await get_all_alimentadores(db)
     return alimentadores
+
+@router.post("", response_model=PublicAlimentador, status_code=status.HTTP_201_CREATED)
+async def create_new_alimentador(
+    alimentador: Alimentador,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    if alimentador.proveedor == Provider.GOOGLE and alimentador.contrasenia:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="POST /alimentadores body request MUST NOT contain attribute 'contrasenia' when the alimentador is being provided by Google"
+        )
+    if alimentador.proveedor == Provider.LOCAL and alimentador.contrasenia is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="POST /alimentadores body request MUST contain attribute 'contrasenia' when the alimentador is being provided locally"
+        )
+
+    new_alimentador = await insert_new_alimentador(db, alimentador)
+
+    if not new_alimentador:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error inserting alimentador. Verify whether the alimentador has not been registered already"
+        )
+
+    return new_alimentador
