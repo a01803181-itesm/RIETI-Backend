@@ -1,9 +1,10 @@
 {
   "info": {
-    "_postman_id": "568de5a6-fdd0-4b84-948c-6d1cef7bd48f",
+    "_postman_id": "6761ec26-a883-4208-ad93-fad33016950b",
     "name": "RIETI",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "34417659"
+    "_exporter_id": "52881490",
+    "_collection_link": "https://go.postman.co/collection/52881490-6761ec26-a883-4208-ad93-fad33016950b?source=collection_link"
   },
   "item": [
     {
@@ -109,7 +110,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -141,7 +142,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -173,7 +174,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -205,7 +206,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 }
@@ -313,7 +314,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -345,7 +346,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -377,7 +378,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 },
@@ -409,7 +410,7 @@
                   "status": "OK",
                   "code": 200,
                   "_postman_previewlanguage": "text",
-                  "header": null,
+                  "header": [],
                   "cookie": [],
                   "body": ""
                 }
@@ -458,6 +459,33 @@
                       "key": "alim_email",
                       "value": "someone@somewhere.gmail"
                     }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "/alimentadores",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"correoAl\": \"alimentador1@ejemplo.com\",\r\n  \"contrasenia\": \"passwordSeguro123\",\r\n  \"proveedor\": \"local\",\r\n  \"telefono\": \"5512345678\",\r\n  \"nombre\": \"Carlos\",\r\n  \"ap_paterno\": \"Mendoza\",\r\n  \"ap_materno\": \"García\",\r\n  \"municipio\": \"Atizapán\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/v1/alimentadores",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "alimentadores"
                   ]
                 }
               },
