@@ -22,7 +22,14 @@ jobs:
 
       - name: Install pip dependencies
         run: |
-          pip install -r requirements.txt -t .
+          pip install \
+            --platform manylinux2014_x86_64 \
+            --target ./package \
+            --implementation cp \
+            --python-version 3.14 \
+            --only-binary=:all: \
+            --upgrade \
+            -r requirements.txt
       
       - name: Package Lambda function
         run: |
