@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
     yield
     await db_manager.close()
 
-app = FastAPI(root_path="/default/rieti-api", title=settings.PROJECT_NAME, lifespan=lifespan)
+app = FastAPI(root_path="/default", title=settings.PROJECT_NAME, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
