@@ -56,11 +56,14 @@ dia timestamp not null,
 tipoTrabajo varchar(50) not null,
 numNinios int(3),
 direccion varchar(100) not null,
+municipio enum (' ATIZAPAN', 'NAUCALPAN', 'CUAUTITLAN_IZCALLI', 'CUAUTITLAN', 
+'HUIXQUILUCAN', 'NICOLAS_ROMERO', 'TLALNEPANTLA', 'TULTITLAN', 'COACALCO', 'ECATEPEC', 'NEZAHUALCOYOTL'),
 latitud DECIMAL(9,6) not null,
 longitud DECIMAL(9,6) not null, 
 nombre varchar(50) not null,
 ap_paterno varchar(64) not null, 
 ap_materno varchar(64) not null, 
+detalles_adcionales text,
 correoU varchar(100),
 folioE varchar(32),
 correoAl varchar(100),
@@ -72,6 +75,7 @@ foreign key (correoAl) references Alimentador(correoAl) on delete cascade
 create table AdminReporte(
 correoAd varchar(100),
 folio varchar(32),
+descripcion text, 
 primary key (correoAd, folio),
 foreign key(correoAd) references Admin(correoAd),
 foreign key (folio) references Reporte(folio)
@@ -82,4 +86,7 @@ id int auto_increment primary key,
 url varchar(255) not null,
 folio varchar(32),
 foreign key (folio) references Reporte(folio)
-)
+);
+
+INSERT INTO Usuario (correoU, contrasenia, proveedor) VALUES
+("casita@gmail.com", "123456", "local")
