@@ -31,13 +31,15 @@ jobs:
             --upgrade \
             -r requirements.txt
       
-      - name: Package Lambda function
+      - name: Build Deployment Package
         run: |
-          zip -r function.zip . -x "*.git*" "*.github*" "*.txt"
+          cp -r app ./package/app
+          cd package
+          zip -r ../deployment_package.zip .
   
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
             --function-name rieti-api \
-            --zip-file fileb://function.zip \
+            --zip-file fileb://deployment_package.zip \
             --region us-east-1
