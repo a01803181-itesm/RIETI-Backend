@@ -109,7 +109,7 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
                 reporte.tipoTrabajo,
                 reporte.numNinios,
                 reporte.direccion,
-                reporte.municipio.value,
+                reporte.municipio.value if hasattr(reporte.municipio, 'value') else reporte.municipio,
                 float(reporte.latitud),
                 float(reporte.longitud),
                 reporte.nombre,
@@ -122,6 +122,7 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
             ))
 
             if cur.rowcount == 1:
+                await conn.commit()
                 logger.log(SUCCESS, "Reporte successfully inserted into DB")
                 return reporte
 
