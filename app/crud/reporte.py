@@ -27,7 +27,7 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
                     tipoTrabajo=row[3],
                     numNinios=row[4],
                     direccion=row[5],
-                    municipio=row[6],
+                    municipio=row[6].strip() if isinstance(row[6], str) else row[6],
                     latitud=float(row[7]),
                     longitud=float(row[8]),
                     nombre=row[9],
@@ -62,27 +62,29 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
 
             if len(rows) > 0:
                 logger.log(SUCCESS, "All reportes rows were successfully fetched and returned")
-                return [
-                    Reporte(
-                        folio=row[0],
-                        edad=row[1],
-                        dia=row[2],
-                        tipoTrabajo=row[3],
-                        numNinios=row[4],
-                        direccion=row[5],
-                        municipio=row[6],
-                        latitud=float(row[7]),
-                        longitud=float(row[8]),
-                        nombre=row[9],
-                        ap_paterno=row[10],
-                        ap_materno=row[11],
-                        detalles_adcionales=row[12],
-                        correoU=row[13],
-                        folioE=row[14],
-                        correoAl=row[15]
+                lista = []
+                for row in rows:
+                    lista.append(
+                        Reporte(
+                            folio=row[0],
+                            edad=row[1],
+                            dia=row[2],
+                            tipoTrabajo=row[3],
+                            numNinios=row[4],
+                            direccion=row[5],
+                            municipio=row[6].strip() if isinstance(row[6], str) else row[6],
+                            latitud=float(row[7]),
+                            longitud=float(row[8]),
+                            nombre=row[9],
+                            ap_paterno=row[10],
+                            ap_materno=row[11],
+                            detalles_adcionales=row[12],
+                            correoU=row[13],
+                            folioE=row[14],
+                            correoAl=row[15]
+                        )
                     )
-                    for row in rows
-                ]
+                return lista
 
             logger.warning("'Reporte' DB entity is empty")
             return []
