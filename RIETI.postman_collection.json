@@ -494,6 +494,60 @@
           ]
         },
         {
+          "name": "Reportes",
+          "item": [
+            {
+              "name": "/reportes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "/reportes",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"folio\": \"REP-2026-001\",\r\n  \"edad\": 11,\r\n  \"dia\": \"2026-09-30T18:30:00Z\",\r\n  \"tipoTrabajo\": \"Venta ambulante de dulces\",\r\n  \"numNinios\": 2,\r\n  \"direccion\": \"Av. Primero de Mayo S/N, Col. Centro\",\r\n  \"municipio\": \"CUAUTITLAN_IZCALLI\",\r\n  \"latitud\": 19.6568,\r\n  \"longitud\": -99.2098,\r\n  \"nombre\": \"Juan\",\r\n  \"ap_paterno\": \"Pérez\",\r\n  \"ap_materno\": \"García\",\r\n  \"detalles_adcionales\": \"Se observaron dos menores vendiendo dulces en el semáforo principal.\",\r\n  \"correoU\": \"casita@gmail.com\",\r\n  \"folioE\": null,\r\n  \"correoAl\": null\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/v1/reportes",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "reportes"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "/reportes/:folio",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "/check",
           "request": {
             "method": "GET",
