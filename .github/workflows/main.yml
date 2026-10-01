@@ -1,5 +1,4 @@
 name: RIETI API CI/CD in AWS Lambda
-#necesito hacer mi push entonces esta es la linea 
 on:
   push:
     branches:
@@ -11,12 +10,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Check AWS secrets
-        run: |
-          echo "Access key exists: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}"
-          echo "Secret key exists: ${{ secrets.AWS_SECRET_ACCESS_KEY != '' }}"
-          echo "Session token exists: ${{ secrets.AWS_SESSION_TOKEN != '' }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

@@ -5,5 +5,5 @@ class Expediente(BaseModel):
     folioE: str
     lugar: str
     descripcion: str
-    status: Status
+    estatus: Status
     correoAl: EmailStr
