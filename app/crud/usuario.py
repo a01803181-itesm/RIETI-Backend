@@ -1,9 +1,9 @@
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLAsyncConnection
-from app.schemas.usuario import PublicUsuario, Usuario
+from app.schemas.usuario import Usuario
 from app.core.logs import logger, SUCCESS
 
-async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> PublicUsuario | None:
+async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Usuario | None:
     query = """
         SELECT correoU, proveedor
         FROM Usuario
@@ -17,7 +17,7 @@ async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Public
 
             if row:
                 logger.log(SUCCESS, f"User with email {userEmail} successfully found and fetched from DB")
-                return PublicUsuario(
+                return Usuario(
                     correoU=row[0],
                     proveedor=row[1]
                 )
@@ -28,7 +28,7 @@ async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Public
         logger.error(f"Error reading user with email: {userEmail}: {e}")
         return None
 
-async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
+async def select_all_users(conn: MySQLAsyncConnection) -> list[Usuario]:
     query = """
         SELECT correoU, proveedor
         FROM Usuario;
@@ -43,7 +43,7 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
             if len(rows) > 0:
                 logger.log(SUCCESS, "Select all users query successfully returned rows")
                 return [
-                    PublicUsuario(
+                    Usuario(
                         correoU=row[0],
                         proveedor=row[1]
                     )
@@ -54,25 +54,25 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[PublicUsuario]:
             return []
     except Exception as e:
         logger.error(f"Error reading all users: {e}")
+        return []
 
-async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> PublicUsuario | None:
+async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> Usuario | None:
     query = """
         INSERT INTO Usuario
-        (correoU, contrasenia, proveedor)
-        VALUES (%s, %s, %s);
+        (correoU, proveedor)
+        VALUES (%s, %s);
     """
 
     try:
         async with conn.cursor() as cur:
             await cur.execute(query, (
                 user.correoU,
-                user.contrasenia,
                 user.proveedor)
             )
 
             if cur.rowcount == 1:
                 logger.log(SUCCESS, f"User with email {user.correoU} successfully registered")
-                return PublicUsuario(correoU=user.correoU,proveedor=user.proveedor)
+                return user
 
             logger.error("New user insertion failed or affected 0 rows")
             return None

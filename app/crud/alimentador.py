@@ -1,13 +1,13 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
-from app.schemas.alimentador import PublicAlimentador, Alimentador
+from app.schemas.alimentador import Alimentador
 from app.core.logs import logger, SUCCESS
 
-async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> PublicAlimentador | None:
+async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimentador | None:
     query = """
         SELECT
-        correoAl, proveedor, telefono,
-        nombre, ap_paterno, ap_materno, municipio
+            correoAl, proveedor, telefono,
+            nombre, ap_paterno, ap_materno, municipio
         FROM Alimentador
         WHERE correoAl = %s;
     """
@@ -20,7 +20,7 @@ async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Public
 
             if row:
                 logger.log(SUCCESS, f"Alimentador with email {alim_email} successfully found and fetched")
-                return PublicAlimentador(
+                return Alimentador(
                     correoAl=row[0],
                     proveedor=row[1],
                     telefono=row[2],
@@ -36,11 +36,11 @@ async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Public
         logger.error(f"Error founding alimentador with email {alim_email}: {e}")
         return None
 
-async def get_all_alimentadores(conn: MySQLConnection) -> list[PublicAlimentador]:
+async def get_all_alimentadores(conn: MySQLConnection) -> list[Alimentador]:
     query = """
         SELECT
-        correoAl, proveedor, telefono,
-        nombre, ap_paterno, ap_materno, municipio
+            correoAl, proveedor, telefono,
+            nombre, ap_paterno, ap_materno, municipio
         FROM Alimentador;
     """
 
@@ -53,7 +53,7 @@ async def get_all_alimentadores(conn: MySQLConnection) -> list[PublicAlimentador
             if len(rows) > 0:
                 logger.log(SUCCESS, f"All alimentadores rows where successfully fetched and returned")
                 return [
-                    PublicAlimentador(
+                    Alimentador(
                         correoAl=row[0],
                         proveedor=row[1],
                         telefono=row[2],
@@ -71,19 +71,18 @@ async def get_all_alimentadores(conn: MySQLConnection) -> list[PublicAlimentador
         logger.error(f"Error during fetching rows from 'Alimentador' DB entity: {e}")
         return []
 
-async def insert_new_alimentador(conn: MySQLConnection, alimentador: Alimentador) -> PublicAlimentador:
+async def insert_new_alimentador(conn: MySQLConnection, alimentador: Alimentador) -> Alimentador | None:
     query = """
         INSERT INTO Alimentador
-        (correoAl, contrasenia, proveedor,
-        telefono, nombre, ap_paterno, ap_materno, municipio)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+            (correoAl, proveedor, telefono,
+            nombre, ap_paterno, ap_materno, municipio)
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
     """
 
     try:
         async with conn.cursor() as cur:
             await cur.execute(query, (
                     alimentador.correoAl,
-                    alimentador.contrasenia,
                     alimentador.proveedor,
                     alimentador.telefono,
                     alimentador.nombre,
@@ -95,7 +94,7 @@ async def insert_new_alimentador(conn: MySQLConnection, alimentador: Alimentador
 
             if cur.rowcount == 1:
                 logger.log(SUCCESS, "Alimentador successfully inserted into DB")
-                return PublicAlimentador(
+                return Alimentador(
                     correoAl=alimentador.correoAl,
                     proveedor=alimentador.proveedor,
                     telefono=alimentador.telefono,

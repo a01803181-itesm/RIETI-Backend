@@ -14,14 +14,12 @@ drop table if exists Evidencia;
 
 create table Usuario(
 correoU varchar(100) primary key,
-contrasenia varchar(255),
-proveedor enum('local', 'google')
+proveedor enum('cognito', 'google') not null,
 );
 
 create table Admin(
 correoAd varchar(100) primary key,
-contrasenia varchar(255),
-proveedor enum('local', 'google'),
+proveedor enum('cognito', 'google') not null,
 nombre varchar(50) not null,
 ap_paterno varchar(64) not null, 
 ap_materno varchar(64) not null, 
@@ -30,8 +28,7 @@ telefono varchar(10) not null
 
 create table Alimentador(
 correoAl varchar(100) primary key,
-contrasenia varchar(255),
-proveedor enum('local', 'google'),
+proveedor enum('cognito', 'google') not null,
 telefono varchar(10) not null,
 nombre varchar(50) not null,
 ap_paterno varchar(64) not null, 

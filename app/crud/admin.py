@@ -1,14 +1,13 @@
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
-from app.schemas.admin import Admin, PublicAdmin
-from app.schemas.enums import Provider
+from app.schemas.admin import Admin
 from app.core.logs import logger, SUCCESS
 
-async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> PublicAdmin | None:
+async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | None:
     query = """
         SELECT
-        correoAd, proveedor, nombre,
-        ap_paterno, ap_materno, telefono
+            correoAd, proveedor, nombre,
+            ap_paterno, ap_materno, telefono
         FROM Admin
         WHERE correoAd = %s;
     """
@@ -21,7 +20,7 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> PublicAdmin
 
             if row:
                 logger.log(SUCCESS, f"Admin with email {admin_email} successfully found and fetched from DB")
-                return PublicAdmin(
+                return Admin(
                     correoAd=row[0],
                     proveedor=row[1],
                     nombre=row[2],
@@ -39,8 +38,8 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> PublicAdmin
 async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
     query = """
         SELECT
-        correoAd, proveedor, nombre,
-        ap_paterno, ap_materno, telefono
+            correoAd, proveedor, nombre,
+            ap_paterno, ap_materno, telefono
         FROM Admin;
     """
 
@@ -53,7 +52,7 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
             if len(rows) > 0:
                 logger.log(SUCCESS, f"Query successfully found Admin rows")
                 return [
-                    PublicAdmin(
+                    Admin(
                         correoAd=row[0],
                         proveedor=row[1],
                         nombre=row[2],
@@ -70,19 +69,18 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
         logger.error(f"Error during fetching all Admin rows from DB: {e}")
         return []
 
-async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> PublicAdmin | None:
+async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> Admin | None:
     query = """
         INSERT INTO Admin
-        (correoAd, contrasenia, proveedor,
-        nombre, ap_paterno, ap_materno, telefono)
-        VALUES (%s, %s, %s, %s, %s, %s, %s);
+            (correoAd, proveedor, nombre,
+            ap_paterno, ap_materno, telefono)
+        VALUES (%s, %s, %s, %s, %s, %s);
     """
 
     try:
         async with conn.cursor() as cur:
             await cur.execute(query, (
                     admin.correoAd,
-                    admin.contrasenia,
                     admin.proveedor,
                     admin.nombre,
                     admin.ap_paterno,
@@ -93,7 +91,7 @@ async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> PublicAdmin |
 
             if cur.rowcount == 1:
                 logger.log(SUCCESS, "Admin successfully inserted into 'Admin' entity")
-                return PublicAdmin(
+                return Admin(
                     correoAd=admin.correoAd,
                     proveedor=admin.proveedor,
                     nombre=admin.nombre,
