@@ -5,7 +5,6 @@ from asyncmy import Connection as MySQLConnection
 from app.crud.alimentador import get_alimentador, get_all_alimentadores, insert_new_alimentador
 from app.schemas.alimentador import Alimentador
 from app.core.db_connection import get_db
-from app.schemas.enums import Provider
 
 router = APIRouter()
 

@@ -2,6 +2,7 @@ from pydantic import EmailStr
 from asyncmy import Connection as MySQLAsyncConnection
 from app.schemas.usuario import Usuario
 from app.core.logs import logger, SUCCESS
+from app.schemas.enums import Provider
 
 async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Usuario | None:
     query = """
@@ -19,7 +20,7 @@ async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Usuari
                 logger.log(SUCCESS, f"User with email {userEmail} successfully found and fetched from DB")
                 return Usuario(
                     correoU=row[0],
-                    proveedor=row[1]
+                    proveedor=Provider(row[1])
                 )
 
             logger.warning(f"Could not find any user with email: {userEmail}")
@@ -41,11 +42,13 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[Usuario]:
             rows = await cur.fetchall()
 
             if len(rows) > 0:
+                for row in rows:
+                    print(row)
                 logger.log(SUCCESS, "Select all users query successfully returned rows")
                 return [
                     Usuario(
                         correoU=row[0],
-                        proveedor=row[1]
+                        proveedor=Provider(row[1])
                     )
                     for row in rows
                 ]

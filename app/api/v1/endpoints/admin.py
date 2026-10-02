@@ -5,7 +5,6 @@ from typing import Any
 from app.core.db_connection import get_db
 from app.schemas.admin import Admin
 from app.crud.admin import get_admin, get_all_admins, insert_new_admin
-from app.schemas.enums import Provider
 
 router = APIRouter()
 

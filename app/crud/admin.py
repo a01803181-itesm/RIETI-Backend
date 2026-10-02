@@ -2,6 +2,7 @@ from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
 from app.schemas.admin import Admin
 from app.core.logs import logger, SUCCESS
+from app.schemas.enums import Provider
 
 async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | None:
     query = """
@@ -22,7 +23,7 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | Non
                 logger.log(SUCCESS, f"Admin with email {admin_email} successfully found and fetched from DB")
                 return Admin(
                     correoAd=row[0],
-                    proveedor=row[1],
+                    proveedor=Provider(row[1]),
                     nombre=row[2],
                     ap_paterno=row[3],
                     ap_materno=row[4],
@@ -54,7 +55,7 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
                 return [
                     Admin(
                         correoAd=row[0],
-                        proveedor=row[1],
+                        proveedor=Provider(row[1]),
                         nombre=row[2],
                         ap_paterno=row[3],
                         ap_materno=row[4],

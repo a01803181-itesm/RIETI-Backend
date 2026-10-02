@@ -2,6 +2,7 @@ from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from app.schemas.alimentador import Alimentador
 from app.core.logs import logger, SUCCESS
+from app.schemas.enums import Provider
 
 async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimentador | None:
     query = """
@@ -22,7 +23,7 @@ async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimen
                 logger.log(SUCCESS, f"Alimentador with email {alim_email} successfully found and fetched")
                 return Alimentador(
                     correoAl=row[0],
-                    proveedor=row[1],
+                    proveedor=Provider(row[1]),
                     telefono=row[2],
                     nombre=row[3],
                     ap_paterno=row[4],
@@ -55,7 +56,7 @@ async def get_all_alimentadores(conn: MySQLConnection) -> list[Alimentador]:
                 return [
                     Alimentador(
                         correoAl=row[0],
-                        proveedor=row[1],
+                        proveedor=Provider(row[1]),
                         telefono=row[2],
                         nombre=row[3],
                         ap_paterno=row[4],
