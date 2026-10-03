@@ -68,9 +68,9 @@ async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> Usuario | No
 
     try:
         async with conn.cursor() as cur:
-            await cur.execute(query, (
-                user.correoU,
-                user.proveedor)
+            await cur.execute(query,
+                (user.correoU,
+                user.proveedor.value)
             )
 
             if cur.rowcount == 1:

@@ -82,7 +82,7 @@ async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> Admin | None:
         async with conn.cursor() as cur:
             await cur.execute(query, (
                     admin.correoAd,
-                    admin.proveedor,
+                    admin.proveedor.value,
                     admin.nombre,
                     admin.ap_paterno,
                     admin.ap_materno,

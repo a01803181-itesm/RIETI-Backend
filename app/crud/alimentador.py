@@ -84,7 +84,7 @@ async def insert_new_alimentador(conn: MySQLConnection, alimentador: Alimentador
         async with conn.cursor() as cur:
             await cur.execute(query, (
                     alimentador.correoAl,
-                    alimentador.proveedor,
+                    alimentador.proveedor.value,
                     alimentador.telefono,
                     alimentador.nombre,
                     alimentador.ap_paterno,
