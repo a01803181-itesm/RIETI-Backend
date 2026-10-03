@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     MYSQL_DB_USER: str
     MYSQL_DB_PORT: str
 
+    AWS_COGNITO_REGION: str
+    COGNITO_USER_POOL_ID: str
+    ANDROID_APP_CLIENT_ID: str
+
     ALLOWED_ORIGINS: list[str] = ['*']
 
     model_config = SettingsConfigDict(
