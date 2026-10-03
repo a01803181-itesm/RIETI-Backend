@@ -3,7 +3,7 @@ from pydantic import EmailStr
 from typing import Any
 from asyncmy import Connection as MySQLConnection
 from app.core.db_connection import get_db
-from app.schemas.usuario import Usuario
+from app.schemas.usuario import Usuario, CheckEmail
 from app.crud.usuario import select_user, select_all_users, insert_user
 
 router = APIRouter()
@@ -44,3 +44,12 @@ async def register_new_user(
     await db.commit()
 
     return new_user
+
+@router.get("/check-email/{email}", response_model=CheckEmail)
+async def check_user_existance(email: EmailStr, db: MySQLConnection = Depends(get_db)) -> Any:
+    user = await select_user(db, email)
+
+    if not user:
+        return CheckEmail(exists=False, provider=None)
+    else:
+        return CheckEmail(exists=True, provider=user.proveedor)
