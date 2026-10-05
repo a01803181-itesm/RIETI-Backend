@@ -272,7 +272,7 @@ async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
             (SELECT COUNT(folio)
             FROM Reporte r
             JOIN Expediente e ON e.folioE = r.folioE
-            WHERE estatus = "3_En_seguimiento"
+            WHERE estatus = "3_En_seguimiento")
             / 
             (SELECT COUNT(folio)
             FROM Reporte)
