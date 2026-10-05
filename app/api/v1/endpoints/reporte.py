@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/mapa-calor", response_model=list[CoordenadaReporte])
 async def read_coordenadas_mapa(db: MySQLConnection = Depends(get_db)) -> Any:
     coordenadas = await get_coordenadas_reportes(db)
-    return [{"lat": lat, "lng:": lng} for lat, lng in coordenadas]
+    return [{"lat": lat, "lng": lng} for lat, lng in coordenadas]
 
 @router.get("/estadisticas/por-estatus", response_model=list[CategoriaTotal])
 async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> Any:
