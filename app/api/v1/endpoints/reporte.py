@@ -3,10 +3,35 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from asyncmy import Connection as MySQLConnection
 
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte
-from app.schemas.reporte import Reporte
+from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion, get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status, get_reportes_por_tiempo
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData
 from app.core.db_connection import get_db
 
 router = APIRouter()
+
+@router.get("/mapa-calor", response_model=list[CoordenadaReporte])
+async def read_coordenadas_mapa(db: MySQLConnection = Depends(get_db)) -> Any:
+    coordenadas = await get_coordenadas_reportes(db)
+    return [{"lat": lat, "lng:": lng} for lat, lng in coordenadas]
+
+@router.get("/estadisticas/por-estatus", response_model=list[CategoriaTotal])
+async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> Any:
+    data = await get_reportes_por_status(db)
+    return [{"categoria": c, "total": t} for c, t in data]
+
+@router.get("dashboard-data", response_model=DashboardData)
+async def read_dashboard_data(db: MySQLConnection = Depends(get_db)) -> Any:
+    promedio = await get_promedio_de_resolucion(db)
+    pendientesUltimaSemana = await get_reportes_pendientes_ultima_semana(db)
+    enProceso = await get_porcentaje_reportes_en_proceso(db)
+    pendientes = await get_porcentaje_reportes_pendientes(db)
+
+    return {
+        "promedio_dias_resolucion": promedio,
+        "pendientes_ultima_semana": pendientes,
+        "porcentaje_en_proceso": enProceso,
+        "porcentaje_pendientes": pendientes,
+    }
 
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:

@@ -16,7 +16,7 @@ class Status(str, Enum):
     REINCIDENTE = '8_Reincidente'
     
 class MunicipioEnum(str, Enum):
-    ATIZAPAN = " ATIZAPAN"
+    ATIZAPAN = "ATIZAPAN"
     NAUCALPAN = "NAUCALPAN"
     CUAUTITLAN_IZCALLI = "CUAUTITLAN_IZCALLI"
     CUAUTITLAN = "CUAUTITLAN"

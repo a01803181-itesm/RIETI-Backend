@@ -21,3 +21,19 @@ class Reporte(BaseModel):
     folioE: str | None = None
     correoAl: EmailStr | None = None
 
+class CoordenadaReporte(BaseModel):
+    lat: float
+    lng: float
+
+class CategoriaTotal(BaseModel):
+    categoria: str
+    total: int
+
+
+class DashboardData(BaseModel):
+    promedioResolucion: float
+    pendientesUltimaSemana: int
+    porcentajeEnProceso: float
+    porcentajePendientes: float
+
+

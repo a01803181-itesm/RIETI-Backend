@@ -3,6 +3,7 @@ from pydantic import EmailStr
 from app.schemas.reporte import Reporte
 from app.core.logs import logger, SUCCESS
 
+# OBTENER REPORTE
 async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | None:
     query = """
         SELECT
@@ -45,7 +46,7 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
         logger.error(f"Error finding reporte with folio {folio}: {e}")
         return None
 
-
+# OBTENER REPORTES
 async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
     query = """
         SELECT
@@ -92,7 +93,240 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
         logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
         return []
 
+# OBTENER REPORTES POR ESTATUS
+async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]]:
+    query = """
+        SELECT estatus, COUNT(folioE)
+        FROM Expediente
+        GROUP BY estatus; 
+    """
 
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Count of reports by status succesfully fetched and returned")
+                
+                return [(str(row[0]), int(row[1])) for row in rows]
+            logger.warning("No reports with status found")
+            return []
+    except Exception as e:
+        logger.error(f"Error founding reports with a status: {e}")
+        return []
+
+# OBTENER REPORTES POR FECHA Y HORA
+async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
+    query = """
+        SELECT MONTHNAME(dia), COUNT(folio)
+        FROM Reporte
+        GROUP BY MONTH(dia), MONTHNAME(dia);
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Number of reports by date succesfully fetched and returned")
+
+                return [(str(row[0]), int(row[1])) for row in rows]
+            logger.warning("No reports with date asigned were found")
+            return []
+    except Exception as e:
+        logger.error(f"Error founding reports by date: {e}")
+        return []
+
+# OBTENER REPORTES POR MUNICIPIO
+async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, int]]:
+    query = """
+        SELECT municipio, COUNT(folio)
+        FROM Reporte
+        GROUP BY municipio;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Reports by municipality successfully fetched and returned")
+
+                return [(str(row[0]), int(row[1])) for row in rows]
+            logger.warning("No reports by municipality were found")
+            return []
+    except Exception as e:
+        logger.error(f"Error founding reports by municipality: {e}")
+        return []
+
+# OBTENER REPORTES POR AUTORIDAD
+async def get_reportes_por_autoridad(conn: MySQLConnection) -> list[tuple[str, int]]:
+    query = """
+        SELECT CONCAT(a.nombre, ' ', a.ap_paterno), COUNT(r.folio)
+        FROM Reporte r
+        JOIN Alimentador a ON a.correoAl = r.correoAl
+        GROUP BY a.correoAl, a.nombreAl, a.ap_paterno;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Reports by autority successfully fetched and returned")
+                return [(str(row[0]), int(row[1])) for row in rows]
+            
+            logger.warning("No reports by autority were found")
+            return []
+    except Exception as e:
+        logger.error(f"Error founding reports by autority: {e}")
+        return []
+
+# OBTENER COORDENADAS (PARA MAPA DE CALOR)
+async def get_coordenadas_reportes(conn: MySQLConnection) -> list[tuple[float, float]]:
+    query = """
+        SELECT latitud, longitud
+        FROM Reporte;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "List of coordinates fetched and returned successfully")
+                return [(float(row[0]), float(row[1])) for row in rows]
+
+            logger.warning("Unable to obtain coordinates. No reports were found")
+            return []
+    except Exception as e:
+        logger.error(f"Error fetching coordinates: {e}")
+        return []
+
+    
+# OBTENER FECHA PROMEDIO DE RESOLUCIÓN DE REPORTES EN GENERAL (FECHA DE REGISTRO - HOY)
+async def get_promedio_de_resolucion(conn: MySQLConnection) -> float:
+    query = """
+        SELECT COALESCE(AVG(DATEDIFF(CURDATE(), dia)), 0)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        WHERE estatus = "5_Concluido";
+    """ 
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, "Average of report resolution successfully fetched and returned")
+                return float(row[0])
+
+            logger.warning("Unable to obtain the average of report resolution")
+            return 0.0
+    except Exception as e:
+        logger.error(f"Error founding the average of resolution: {e}")
+        return 0.0
+
+# OBTENER REPORTES PENDIENTES REALIZADOS EN LA ÚLTIMA SEMANA
+async def get_reportes_pendientes_ultima_semana(conn: MySQLConnection) -> int:
+    query = """
+        SELECT COUNT(folio)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        WHERE DATEDIFF(CURDATE(), dia) <= 7
+        AND estatus != "5_Concluido";
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, "Count of pending reports made on the last seven days fetched and returned successfully")
+                return int(row[0])
+
+            logger.warning("Unable to obtain the number of pending reports of the last seven days")
+            return 0
+    except Exception as e:
+        logger.error(f"Error founding pending reports made on the last seven days: {e}")
+        return 0
+
+# OBTENER PORCENTAJE DE REPORTES TOTALES EN PROCESO
+async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
+    query = """
+        SELECT 
+            (SELECT COUNT(folio)
+            FROM Reporte r
+            JOIN Expediente e ON e.folioE = r.folioE
+            WHERE estatus = "3_En_seguimiento"
+            / 
+            (SELECT COUNT(folio)
+            FROM Reporte)
+            * 100;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, "Percentage of pending reports fetched and returned successfully")
+                return row
+
+            logger.warning("Unable to obtain the percentage of pending reports")
+            return 0.0
+    except Exception as e:
+        logger.error(f"Error founding the percentage of pending reports: {e}")
+        return 0.0
+
+# OBTENER PORCENTAJE DE REPORTES TOTALES EN ESTADO PENDIENTE
+async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
+    query = """
+        SELECT 
+            (SELECT COUNT(folio)
+            FROM Reporte r
+            JOIN Expediente e ON e.folioE = r.folioE
+            WHERE estatus = "1_Registrado"
+            OR estatus = "2_En_revision")
+            /
+            (SELECT COUNT(folio)
+            FROM Reporte)
+            * 100;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, "Percentage of reports on process successfully fetched and returned")
+                return row
+
+            logger.warning("Unable to obtain the percentage of reports on process")
+            return 0.0
+    except Exception as e:
+        logger.error(f"Error founding the percentage of reports on process: {e}")
+        return 0.0
+
+# INSERTAR NUEVO REPORTE
 async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte | None:
     query = """
         INSERT INTO Reporte
