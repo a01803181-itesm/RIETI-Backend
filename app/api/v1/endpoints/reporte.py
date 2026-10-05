@@ -19,7 +19,7 @@ async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> An
     data = await get_reportes_por_status(db)
     return [{"categoria": c, "total": t} for c, t in data]
 
-@router.get("dashboard-data", response_model=DashboardData)
+@router.get("/dashboard-data", response_model=DashboardData)
 async def read_dashboard_data(db: MySQLConnection = Depends(get_db)) -> Any:
     promedio = await get_promedio_de_resolucion(db)
     pendientesUltimaSemana = await get_reportes_pendientes_ultima_semana(db)
@@ -28,7 +28,7 @@ async def read_dashboard_data(db: MySQLConnection = Depends(get_db)) -> Any:
 
     return {
         "promedio_dias_resolucion": promedio,
-        "pendientes_ultima_semana": pendientes,
+        "pendientes_ultima_semana": pendientesUltimaSemana,
         "porcentaje_en_proceso": enProceso,
         "porcentaje_pendientes": pendientes,
     }
