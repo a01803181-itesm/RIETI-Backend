@@ -229,11 +229,10 @@ async def get_promedio_de_resolucion(conn: MySQLConnection) -> float:
 
             row = await cur.fetchone()
 
-            if row:
-                logger.log(SUCCESS, "Average of report resolution successfully fetched and returned")
+            if row and row[0] is not None:
+                logger.log(SUCCESS, "Percentage fetched and returned successfully")
                 return float(row[0])
 
-            logger.warning("Unable to obtain the average of report resolution")
             return 0.0
     except Exception as e:
         logger.error(f"Error founding the average of resolution: {e}")
@@ -285,11 +284,10 @@ async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
 
             row = await cur.fetchone()
 
-            if row:
-                logger.log(SUCCESS, "Percentage of pending reports fetched and returned successfully")
-                return row
+            if row and row[0] is not None:
+                logger.log(SUCCESS, "Percentage fetched and returned successfully")
+                return float(row[0])
 
-            logger.warning("Unable to obtain the percentage of pending reports")
             return 0.0
     except Exception as e:
         logger.error(f"Error founding the percentage of pending reports: {e}")
@@ -316,11 +314,10 @@ async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
 
             row = await cur.fetchone()
 
-            if row:
-                logger.log(SUCCESS, "Percentage of reports on process successfully fetched and returned")
-                return row
+            if row and row[0] is not None:
+                logger.log(SUCCESS, "Percentage fetched and returned successfully")
+                return float(row[0])
 
-            logger.warning("Unable to obtain the percentage of reports on process")
             return 0.0
     except Exception as e:
         logger.error(f"Error founding the percentage of reports on process: {e}")
