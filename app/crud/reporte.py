@@ -1,6 +1,8 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
+from pydantic_extra_types.coordinate import Latitude, Longitude
 from app.schemas.reporte import Reporte
+from app.schemas.enums import MunicipioEnum
 from app.core.logs import logger, SUCCESS
 
 # OBTENER REPORTE
@@ -364,3 +366,50 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
     except Exception as e:
         logger.error(f"Error during reporte insertion: {e}")
         return None
+
+async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailStr) -> list[Reporte]:
+    query = """
+        SELECT 
+            folio, edad, dia, tipoTrabajo, numNinios,
+            direccion, municipio, latitud, longitud,
+            nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, folioE, correoAl
+        FROM Reporte
+        WHERE correoU = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (email,))
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, f"Successfully retrieved {len(rows)} reports from user with email {email}")
+                return [
+                    Reporte(
+                        folio=row[0],
+                        edad=row[1],
+                        dia=row[2],
+                        tipoTrabajo=row[3],
+                        numNinios=row[4],
+                        direccion=row[5],
+                        municipio=MunicipioEnum(row[6]),
+                        latitud=Latitude(row[7]),
+                        longitud=Longitude(row[8]),
+                        nombre=row[9],
+                        ap_paterno=row[10],
+                        ap_materno=row[11],
+                        detalles_adcionales=row[12],
+                        correoU=row[13],
+                        folioE=row[14],
+                        correoAl=row[15],
+                    )
+                    for row in rows
+                ]
+
+            logger.warning(f"There are no reports registered by user {email}")
+            return []
+    except Exception as e:
+        logger.error(f"Error at retrieving reports linked by user {email}: {e}")
+        return []

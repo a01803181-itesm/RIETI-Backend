@@ -1,7 +1,9 @@
+from pydantic import EmailStr
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from asyncmy import Connection as MySQLConnection
 
+from app.crud import reporte
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion, get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status, get_reportes_por_tiempo
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData
@@ -68,3 +70,11 @@ async def read_reporte_by_folio(
         )
 
     return reporte
+
+@router.get("/by-user/{user_email}", response_model=list[Reporte])
+async def read_all_reportes_made_by_user(
+    user_email: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    reportes = await reporte.select_all_reportes_by_user_email(db, user_email)
+    return reportes

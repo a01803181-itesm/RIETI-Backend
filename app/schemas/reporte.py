@@ -29,7 +29,6 @@ class CategoriaTotal(BaseModel):
     categoria: str
     total: int
 
-
 class DashboardData(BaseModel):
     promedioResolucion: float
     pendientesUltimaSemana: int
