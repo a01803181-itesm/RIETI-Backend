@@ -13,6 +13,11 @@ router = APIRouter()
 
 
 # OBTENER REPORTES POR FECHA
+# @router.get("/estadisticas/fecha", response_model=list[CategoriaTotal])
+# async def read_reportes_por_fecha(db: MySQLConnection = Depends(get_db)) -> Any:
+#     reportes = await get_reportes_por_tiempo(db)
+#     return [{"mes": m, "total": t} for m, t in reportes]
+
 @router.get("/estadisticas/fecha", response_model=list[CategoriaTotal])
 async def read_reportes_por_fecha(db: MySQLConnection = Depends(get_db)) -> Any:
     reportes = await get_reportes_por_tiempo(db)
