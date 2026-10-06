@@ -119,70 +119,29 @@ async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]
         logger.error(f"Error founding reports with a status: {e}")
         return []
 
+# OBTENER REPORTES POR FECHA Y HORA
 async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
     query = """
-        SELECT 
-            MONTHNAME(dia) AS mes, 
-            COUNT(folio) AS total
+        SELECT MONTHNAME(dia), COUNT(folio)
         FROM Reporte
-        WHERE dia IS NOT NULL
-        GROUP BY MONTHNAME(dia), MONTH(dia)
-        ORDER BY MONTH(dia) ASC;
+        GROUP BY MONTH(dia), MONTHNAME(dia);
     """
 
     try:
         async with conn.cursor() as cur:
             await cur.execute(query)
+
             rows = await cur.fetchall()
 
-            if rows:
-                logger.log(SUCCESS, "Number of reports by date successfully fetched and returned")
-                
-                resultado = []
-                for row in rows:
-                    # Soporta tanto tuplas como diccionarios (DictCursor)
-                    if isinstance(row, dict):
-                        mes = row.get("mes") or ""
-                        total = row.get("total") or 0
-                    else:
-                        mes = row[0] or ""
-                        total = row[1] or 0
-                    
-                    resultado.append((str(mes), int(total)))
-                
-                return resultado
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Number of reports by date succesfully fetched and returned")
 
-            logger.warning("No reports with date assigned were found")
+                return [(str(row[0]), int(row[1])) for row in rows]
+            logger.warning("No reports with date asigned were found")
             return []
-            
     except Exception as e:
-        logger.error(f"Error finding reports by date: {e}")
-        # Si no capturas la excepción aquí o la relanzas, FastAPI no sabrá el detalle original
-        raise e
-
-# OBTENER REPORTES POR FECHA Y HORA
-# async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
-#     query = """
-#         SELECT MONTHNAME(dia), COUNT(folio)
-#         FROM Reporte
-#         GROUP BY MONTH(dia), MONTHNAME(dia);
-#     """
-
-#     try:
-#         async with conn.cursor() as cur:
-#             await cur.execute(query)
-
-#             rows = await cur.fetchall()
-
-#             if len(rows) > 0:
-#                 logger.log(SUCCESS, "Number of reports by date succesfully fetched and returned")
-
-#                 return [(str(row[0]), int(row[1])) for row in rows]
-#             logger.warning("No reports with date asigned were found")
-#             return []
-#     except Exception as e:
-#         logger.error(f"Error founding reports by date: {e}")
-#         return []
+        logger.error(f"Error founding reports by date: {e}")
+        return []
 
 # OBTENER REPORTES POR MUNICIPIO
 async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, int]]:
