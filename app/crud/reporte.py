@@ -219,7 +219,7 @@ async def get_coordenadas_reportes(conn: MySQLConnection) -> list[tuple[float, f
 # OBTENER FECHA PROMEDIO DE RESOLUCIÓN DE REPORTES EN GENERAL (FECHA DE REGISTRO - HOY)
 async def get_promedio_de_resolucion(conn: MySQLConnection) -> float:
     query = """
-        SELECT COALESCE(AVG(DATEDIFF(CURDATE(), dia)), 0)
+        SELECT COALESCE(AVG(DATEDIFF(CURDATE(), r.dia)), 0)
         FROM Reporte r
         JOIN Expediente e ON e.folioE = r.folioE
         WHERE estatus = "5_Concluido";
@@ -270,14 +270,14 @@ async def get_reportes_pendientes_ultima_semana(conn: MySQLConnection) -> int:
 async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
     query = """
         SELECT 
-            (SELECT COUNT(folio)
-            FROM Reporte r
-            JOIN Expediente e ON e.folioE = r.folioE
-            WHERE estatus = "3_En_seguimiento")
-            / 
-            (SELECT COUNT(folio)
-            FROM Reporte)
-            * 100;
+            COALESCE(
+                (SELECT COUNT(folio)
+                FROM Reporte r
+                JOIN Expediente e ON e.folioE = r.folioE
+                WHERE estatus = "3_En_seguimiento")
+                / 
+                NULLIF((SELECT COUNT(folio)
+                FROM Reporte), 0) * 100, 0);
     """
 
     try:
@@ -299,15 +299,15 @@ async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
 async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
     query = """
         SELECT 
-            (SELECT COUNT(folio)
-            FROM Reporte r
-            JOIN Expediente e ON e.folioE = r.folioE
-            WHERE estatus = "1_Registrado"
-            OR estatus = "2_En_revision")
-            /
-            (SELECT COUNT(folio)
-            FROM Reporte)
-            * 100;
+            COALESCE(
+                (SELECT COUNT(folio)
+                FROM Reporte r
+                JOIN Expediente e ON e.folioE = r.folioE
+                WHERE estatus = "1_Registrado"
+                OR estatus = "2_En_revision")
+                /
+                 NULLIF((SELECT COUNT(folio)
+                FROM Reporte), 0) * 100, 0);
     """
 
     try:
