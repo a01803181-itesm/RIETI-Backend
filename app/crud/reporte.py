@@ -173,7 +173,7 @@ async def get_reportes_por_autoridad(conn: MySQLConnection) -> list[tuple[str, i
         SELECT CONCAT(a.nombre, ' ', a.ap_paterno), COUNT(r.folio)
         FROM Reporte r
         JOIN Alimentador a ON a.correoAl = r.correoAl
-        GROUP BY a.correoAl, a.nombreAl, a.ap_paterno;
+        GROUP BY a.correoAl, a.nombre, a.ap_paterno;
     """
 
     try:
