@@ -63,6 +63,12 @@ async def read_promedio_resolucion(db: MySQLConnection = Depends(get_db)) -> Any
     data = await get_promedio_de_resolucion(db)
     return data
 
+
+@router.get("/estadisticas/pendientes-ultima-semana", response_model=Data)
+async def read_pendientes_ultima_semana(db: MySQLConnection = Depends(get_db)) -> Any:
+    data = await get_reportes_pendientes_ultima_semana(db)
+    return data
+
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:
     reportes = await get_all_reportes(db)

@@ -37,6 +37,9 @@ class MesTotal(BaseModel):
 class Data(BaseModel):
     data: float
 
+class DataInt(BaseModel):
+    data: int
+
 class DashboardData(BaseModel):
     promedioResolucion: float
     pendientesUltimaSemana: int
