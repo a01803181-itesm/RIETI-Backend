@@ -4,9 +4,9 @@ create database RIETI;
 
 use RIETI;
 
+drop table if exists Expediente;
 drop table if exists AdminReporte;
 drop table if exists Reporte;
-drop table if exists Expediente;
 drop table if exists Alimentador;
 drop table if exists Admin;
 drop table if exists Usuario;
@@ -14,7 +14,7 @@ drop table if exists Evidencia;
 
 create table Usuario(
 correoU varchar(100) primary key,
-proveedor enum('cognito', 'google') not null,
+proveedor enum('cognito', 'google') not null
 );
 
 create table Admin(
@@ -48,12 +48,12 @@ foreign key (correoAl) references Alimentador(correoAl) on delete cascade
 
 create table Reporte(
 folio varchar(32) primary key,
-edad int(2),
+edad enum ('INFANTES', 'PUBERTOS', 'JOVENES', 'MIXTO'),
 dia timestamp not null,
-tipoTrabajo varchar(50) not null,
+tipoTrabajo enum ('VENTA_AMBULANTE', 'LIMPIEZA_DE_PARABRISAS', 'MENDICIDAD', 'CARGA_Y_DESCARGA', 'TRABAJO_EN_COMERCIO', 'CAMPO', 'CONSTRUCCION','TRABAJO_DOMESTICO','RECOLECCION_DE_RESIDUOS', 'OTRA_ACTIVIDAD'),
 numNinios int(3),
 direccion varchar(100) not null,
-municipio enum (' ATIZAPAN', 'NAUCALPAN', 'CUAUTITLAN_IZCALLI', 'CUAUTITLAN', 
+municipio enum ('ATIZAPAN', 'NAUCALPAN', 'CUAUTITLAN_IZCALLI', 'CUAUTITLAN', 
 'HUIXQUILUCAN', 'NICOLAS_ROMERO', 'TLALNEPANTLA', 'TULTITLAN', 'COACALCO', 'ECATEPEC', 'NEZAHUALCOYOTL'),
 latitud DECIMAL(9,6) not null,
 longitud DECIMAL(9,6) not null, 
