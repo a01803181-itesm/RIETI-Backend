@@ -6,7 +6,7 @@ from asyncmy import Connection as MySQLConnection
 from app.crud import reporte
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion, get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status, get_reportes_por_tiempo
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData, Data
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData, Data, DataInt
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -64,7 +64,7 @@ async def read_promedio_resolucion(db: MySQLConnection = Depends(get_db)) -> Any
     return data
 
 
-@router.get("/estadisticas/pendientes-ultima-semana", response_model=Data)
+@router.get("/estadisticas/pendientes-ultima-semana", response_model=DataInt)
 async def read_pendientes_ultima_semana(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_reportes_pendientes_ultima_semana(db)
     return data
