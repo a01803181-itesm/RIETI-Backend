@@ -2,6 +2,7 @@ from pydantic import BaseModel, AwareDatetime, EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
 from app.schemas.enums import MunicipioEnum
 from datetime import datetime
+from typing import Any
 
 class Reporte(BaseModel):
     folio: str
@@ -28,6 +29,13 @@ class CoordenadaReporte(BaseModel):
 class CategoriaTotal(BaseModel):
     categoria: str
     total: int
+
+class MesTotal(BaseModel):
+    mes: str
+    total: int
+
+class Data(BaseModel):
+    data: Any
 
 class DashboardData(BaseModel):
     promedioResolucion: float
