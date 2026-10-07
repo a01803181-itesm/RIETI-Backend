@@ -69,6 +69,16 @@ async def read_pendientes_ultima_semana(db: MySQLConnection = Depends(get_db)) -
     data = await get_reportes_pendientes_ultima_semana(db)
     return data
 
+@router.get("/pendientes", response_model=Data)
+async def read_porcentaje_pendientes(db: MySQLConnection = Depends(get_db)) -> Any:
+    data = await get_porcentaje_reportes_pendientes(db)
+    return data
+
+@router.get("/en-proceso", response_model=Data)
+async def read_porcentaje_en_proceso(db: MySQLConnection = Depends(get_db)) -> Any:
+    data = await get_porcentaje_reportes_en_proceso(db)
+    return data
+
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:
     reportes = await get_all_reportes(db)
