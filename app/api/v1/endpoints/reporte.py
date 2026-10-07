@@ -61,7 +61,7 @@ async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> An
 @router.get("/estadisticas/promedio-resolucion", response_model=Data)
 async def read_promedio_resolucion(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_promedio_de_resolucion(db)
-    return [{"data": d} for d in data]
+    return data
 
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:

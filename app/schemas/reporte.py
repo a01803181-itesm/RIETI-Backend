@@ -35,7 +35,7 @@ class MesTotal(BaseModel):
     total: int
 
 class Data(BaseModel):
-    data: Any
+    data: float
 
 class DashboardData(BaseModel):
     promedioResolucion: float
