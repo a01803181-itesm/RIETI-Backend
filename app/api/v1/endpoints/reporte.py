@@ -61,23 +61,23 @@ async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> An
 @router.get("/estadisticas/promedio-resolucion", response_model=Data)
 async def read_promedio_resolucion(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_promedio_de_resolucion(db)
-    return data
+    return {"data": data}
 
 
 @router.get("/estadisticas/pendientes-ultima-semana", response_model=DataInt)
 async def read_pendientes_ultima_semana(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_reportes_pendientes_ultima_semana(db)
-    return data
+    return {"data": data}
 
 @router.get("/pendientes", response_model=Data)
 async def read_porcentaje_pendientes(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_porcentaje_reportes_pendientes(db)
-    return data
+    return {"data": data}
 
 @router.get("/en-proceso", response_model=Data)
 async def read_porcentaje_en_proceso(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_porcentaje_reportes_en_proceso(db)
-    return data
+    return {"data": data}
 
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:
