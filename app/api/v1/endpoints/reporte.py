@@ -57,33 +57,37 @@ async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> An
 #         "porcentaje_pendientes": pendientes,
 #     }
 
-
+# OBTENER PROMEDIO RESOLUCIÓN
 @router.get("/estadisticas/promedio-resolucion", response_model=Data)
 async def read_promedio_resolucion(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_promedio_de_resolucion(db)
     return {"data": data}
 
-
+# OBTENER REPORTES PENDIENTES DE LA ULTIMA SEMANA
 @router.get("/estadisticas/pendientes-ultima-semana", response_model=DataInt)
 async def read_pendientes_ultima_semana(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_reportes_pendientes_ultima_semana(db)
     return {"data": data}
 
+# OBTENER PORCENTAJE REPORTES PENDIENTES
 @router.get("/pendientes", response_model=Data)
 async def read_porcentaje_pendientes(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_porcentaje_reportes_pendientes(db)
     return {"data": data}
 
+# OBTENER PROCENTAJE REPORTES EN PROCESO
 @router.get("/en-proceso", response_model=Data)
 async def read_porcentaje_en_proceso(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_porcentaje_reportes_en_proceso(db)
     return {"data": data}
 
+# OBTENER REPORTES
 @router.get("", response_model=list[Reporte])
 async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:
     reportes = await get_all_reportes(db)
     return reportes
 
+# SUBIR REPORTE
 @router.post("", response_model=Reporte, status_code=status.HTTP_201_CREATED)
 async def create_new_reporte(
     reporte: Reporte,
@@ -99,7 +103,7 @@ async def create_new_reporte(
 
     return new_reporte
 
-
+# OBTENER REPORTES POR FOLIO
 @router.get("/{folio}", response_model=Reporte)
 async def read_reporte_by_folio(
     folio: str,
@@ -115,6 +119,7 @@ async def read_reporte_by_folio(
 
     return reporte
 
+# OBTENER USUARIOS POR CORREO
 @router.get("/by-user/{user_email}", response_model=list[Reporte])
 async def read_all_reportes_made_by_user(
     user_email: EmailStr,

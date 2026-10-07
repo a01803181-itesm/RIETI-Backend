@@ -6,7 +6,7 @@ from typing import Any
 
 class Reporte(BaseModel):
     folio: str
-    edad: int | None = None
+    edad: str | None = None
     dia: datetime
     tipoTrabajo: str
     numNinios: int | None = None
