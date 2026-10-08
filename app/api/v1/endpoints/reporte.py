@@ -5,11 +5,14 @@ from asyncmy import Connection as MySQLConnection
 
 from app.crud import reporte
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte
-from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion, get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status, get_reportes_por_tiempo, get_reportes_rango_hora
+from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
+from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
+from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData, Data, DataInt
 from app.core.db_connection import get_db
 
 router = APIRouter()
+
 
 
 # OBTENER REPORTES POR FECHA
@@ -47,6 +50,19 @@ async def read_coordenadas_mapa(db: MySQLConnection = Depends(get_db)) -> Any:
 async def read_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_reportes_por_status(db)
     return [{"categoria": c, "total": t} for c, t in data]
+
+# OBTENER REPORTES POR ESTATUS ESPECÍFICO
+@router.get("/estadisticas/por-estatus/{estatus}")
+async def read_reportes_por_estatus_especifico(estatus: str, db: MySQLConnection = Depends(get_db)) -> Any:
+    reportes = await get_cantidad_reportes_por_estatus_especifico(db, estatus)
+
+    if not reportes:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Count of reports with status {estatus} not found"
+        )
+    
+    return reportes
 
 # OBTENER PROMEDIO RESOLUCIÓN
 @router.get("/estadisticas/promedio-resolucion", response_model=Data)

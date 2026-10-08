@@ -119,6 +119,31 @@ async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]
         logger.error(f"Error founding reports with a status: {e}")
         return []
 
+
+async def get_cantidad_reportes_por_estatus_especifico(conn: MySQLConnection, estatus: str) -> int:
+    query = """
+        SELECT COUNT(folio)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        WHERE estatus = %s
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (estatus,))
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, f"Count of reports with status {estatus} successfully fetched and returned")
+                
+                return int(row[0])
+            logger.warning(f"No reports with status {estatus} were found")
+            return 0
+    except Exception as e:
+        logger.error(f"Error founding reports with status {estatus}: {e}")
+        return 0
+
 # OBTENER REPORTES POR FECHA Y HORA
 async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
     query = """
