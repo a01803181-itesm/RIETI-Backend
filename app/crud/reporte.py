@@ -169,10 +169,15 @@ async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, i
 
 # OBTENER REPORTES POR RANGO DE HORA
 async def get_reportes_rango_hora(conn: MySQLConnection) -> list[tuple[str, int]]:
+    # query = """
+    #     SELECT EXTRACT(HOUR FROM dia), COUNT(EXTRACT(HOUR FROM dia))
+    #     FROM Reporte
+    #     GROUP BY EXTRACT(HOUR FROM dia);
+    # """
     query = """
-        SELECT EXTRACT(HOUR FROM dia), COUNT(EXTRACT(HOUR FROM dia))
+        SELECT dia, COUNT(dia)
         FROM Reporte
-        GROUP BY EXTRACT(HOUR FROM dia);
+        GROUP BY dia;
     """
 
     try:
