@@ -167,6 +167,30 @@ async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, i
         logger.error(f"Error founding reports by municipality: {e}")
         return []
 
+# OBTENER REPORTES POR RANGO DE HORA
+async def get_reportes_rango_hora(conn: MySQLConnection) -> list[tuple[str, int]]:
+    query = """
+        SELECT EXTRACT(HOUR FROM dia), COUNT(EXTRACT(HOUR FROM dia))
+        FROM Reporte
+        GROUP BY EXTRACT(HOUR FROM dia);
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, "Reports by hour successfully fetched and returned")
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning("No reports by hour were found")
+            return []
+    except Exception as e:
+        logger.error(f"Error founding reports by hour: ${e}")
+        return []
+
 # OBTENER REPORTES POR AUTORIDAD
 async def get_reportes_por_autoridad(conn: MySQLConnection) -> list[tuple[str, int]]:
     query = """
