@@ -1,17 +1,17 @@
 from pydantic import BaseModel, AwareDatetime, EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
-from app.schemas.enums import MunicipioEnum
+from app.schemas.enums import RangoEdad, TipoTrabajo
 from datetime import datetime
 from typing import Any
 
 class Reporte(BaseModel):
     folio: str
-    edad: str | None = None
+    edad: RangoEdad
     dia: datetime
-    tipoTrabajo: str
+    tipoTrabajo: TipoTrabajo
     numNinios: int | None = None
     direccion: str
-    municipio: MunicipioEnum
+    municipio: str
     latitud: Latitude
     longitud: Longitude
     nombre: str

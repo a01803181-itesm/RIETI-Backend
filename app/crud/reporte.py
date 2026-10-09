@@ -2,16 +2,16 @@ from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
 from app.schemas.reporte import Reporte
-from app.schemas.enums import MunicipioEnum
+from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
 
 # OBTENER REPORTE
 async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | None:
     query = """
         SELECT
-        folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
-        latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
-        correoU, folioE, correoAl
+            folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+            latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, folioE, correoAl
         FROM Reporte
         WHERE folio = %s;
     """
@@ -25,12 +25,12 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
                 logger.log(SUCCESS, f"Reporte with folio {folio} successfully found and fetched")
                 return Reporte(
                     folio=row[0],
-                    edad=row[1],
+                    edad=RangoEdad(row[1]),
                     dia=row[2],
-                    tipoTrabajo=row[3],
+                    tipoTrabajo=TipoTrabajo(row[3]),
                     numNinios=row[4],
                     direccion=row[5],
-                    municipio=row[6].strip() if isinstance(row[6], str) else row[6],
+                    municipio=row[6],
                     latitud=float(row[7]),
                     longitud=float(row[8]),
                     nombre=row[9],
@@ -52,9 +52,9 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
 async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
     query = """
         SELECT
-        folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
-        latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
-        correoU, folioE, correoAl
+            folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+            latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, folioE, correoAl
         FROM Reporte;
     """
 
@@ -70,12 +70,12 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
                     lista.append(
                         Reporte(
                             folio=row[0],
-                            edad=row[1],
+                            edad=RangoEdad(row[1]),
                             dia=row[2],
-                            tipoTrabajo=row[3],
+                            tipoTrabajo=TipoTrabajo(row[3]),
                             numNinios=row[4],
                             direccion=row[5],
-                            municipio=row[6].strip() if isinstance(row[6], str) else row[6],
+                            municipio=row[6],
                             latitud=float(row[7]),
                             longitud=float(row[8]),
                             nombre=row[9],
@@ -383,9 +383,9 @@ async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
 async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte | None:
     query = """
         INSERT INTO Reporte
-        (folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
-        latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
-        correoU, folioE, correoAl)
+            (folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+            latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, folioE, correoAl)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
     """
 
@@ -393,12 +393,12 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
         async with conn.cursor() as cur:
             await cur.execute(query, (
                 reporte.folio,
-                reporte.edad,
+                reporte.edad.value,
                 reporte.dia,
-                reporte.tipoTrabajo,
+                reporte.tipoTrabajo.value,
                 reporte.numNinios,
                 reporte.direccion,
-                reporte.municipio.value if hasattr(reporte.municipio, 'value') else reporte.municipio,
+                reporte.municipio,
                 float(reporte.latitud),
                 float(reporte.longitud),
                 reporte.nombre,
@@ -443,12 +443,12 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
                 return [
                     Reporte(
                         folio=row[0],
-                        edad=row[1],
+                        edad=RangoEdad(row[1]),
                         dia=row[2],
-                        tipoTrabajo=row[3],
+                        tipoTrabajo=TipoTrabajo(row[3]),
                         numNinios=row[4],
                         direccion=row[5],
-                        municipio=MunicipioEnum(row[6]),
+                        municipio=row[6],
                         latitud=Latitude(row[7]),
                         longitud=Longitude(row[8]),
                         nombre=row[9],
