@@ -136,7 +136,7 @@ async def read_all_reportes_made_by_user(
     return reportes
 
 # OBETENER CANTIDAD DE REPORTES POR ESTATUS
-@router.get("por-estatus/cantidad", response_model=CantidadReportes)
+@router.get("/por-estatus/cantidad", response_model=CantidadReportes)
 async def read_cantidad_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> Any:
     data = await get_cantidad_reportes_por_estatus(db)
     return data
