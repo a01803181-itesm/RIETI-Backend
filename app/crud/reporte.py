@@ -1,7 +1,7 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
-from app.schemas.reporte import Reporte
+from app.schemas.reporte import Reporte, CantidadReportes
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
 
