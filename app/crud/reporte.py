@@ -403,7 +403,7 @@ async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadRe
         async with conn.cursor() as cur:
             await cur.execute(query)
 
-            row = await cur.fetchall()
+            row = await cur.fetchone()
 
             if row:
                 logger.log(SUCCESS, "Total amount of reports and count of reports by estatus successfully fetched and returned")
