@@ -30,9 +30,9 @@ class CategoriaTotal(BaseModel):
     categoria: str
     total: int
 
-class MesTotal(BaseModel):
-    mes: str
-    total: int
+# class MesTotal(BaseModel):
+#     mes: str
+#     total: int
 
 class Data(BaseModel):
     data: float
@@ -45,5 +45,11 @@ class DashboardData(BaseModel):
     pendientesUltimaSemana: int
     porcentajeEnProceso: float
     porcentajePendientes: float
+
+class CantidadReportes(BaseModel):
+    total: int
+    completados: int
+    en_proceso: int
+    pendientes: int
 
 

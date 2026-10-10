@@ -379,6 +379,45 @@ async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
         logger.error(f"Error founding the percentage of reports on process: {e}")
         return 0.0
 
+# OBTENER CANTIDAD DE REPORTES POR ESTATUS
+async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadReportes | None:
+    query = """
+        SELECT COUNT(folio),
+            (SELECT COUNT(folio)
+                FROM Reporte r
+                JOIN Expediente e ON e.folioE = r.folioE
+                WHERE estatus = "5_Concluido"),
+            (SELECT COUNT(folio)
+                            FROM Reporte r
+                            JOIN Expediente e ON e.folioE = r.folioE
+                            WHERE estatus = "3_En_seguimiento"
+                            OR estatus = "2_En_revision"),
+            (SELECT COUNT(folio)
+                            FROM Reporte r
+                            JOIN Expediente e ON e.folioE = r.folioE
+                            WHERE estatus = "1_Registrado")
+        FROM Reporte;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchall()
+
+            if row:
+                logger.log(SUCCESS, "Total amount of reports and count of reports by estatus successfully fetched and returned")
+                return CantidadReportes(row[0], row[1], row[2], row[3])
+            
+            logger.warning("Unable to obtain the total amount of reports and the count of reports by status.")
+            return None
+    except Exception as e:
+        logger.error(f"Error founding the total amount of reports and the count of reports by status: {e}")
+        return None
+
+        
+
+
 # INSERTAR NUEVO REPORTE
 async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte | None:
     query = """
@@ -421,6 +460,7 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
         logger.error(f"Error during reporte insertion: {e}")
         return None
 
+# OBTENER REPORTES POR CORREO
 async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailStr) -> list[Reporte]:
     query = """
         SELECT 

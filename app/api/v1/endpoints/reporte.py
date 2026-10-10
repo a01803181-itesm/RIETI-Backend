@@ -7,8 +7,8 @@ from app.crud import reporte
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
-from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, DashboardData, Data, DataInt
+from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -134,3 +134,9 @@ async def read_all_reportes_made_by_user(
 ) -> Any:
     reportes = await reporte.select_all_reportes_by_user_email(db, user_email)
     return reportes
+
+# OBETENER CANTIDAD DE REPORTES POR ESTATUS
+@router.get("por-estatus/cantidad", response_model=CantidadReportes)
+async def read_cantidad_reportes_por_estatus(db: MySQLConnection = Depends(get_db)) -> Any:
+    data = await get_cantidad_reportes_por_estatus(db)
+    return data
