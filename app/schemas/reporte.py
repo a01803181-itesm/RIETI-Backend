@@ -14,11 +14,11 @@ class Reporte(BaseModel):
     municipio: str
     latitud: Latitude
     longitud: Longitude
-    nombre: str
-    ap_paterno: str
-    ap_materno: str
+    nombre: str | None = None
+    ap_paterno: str | None = None
+    ap_materno: str | None = None
     detalles_adcionales: str | None = None
-    correoU: EmailStr | None = None
+    correoU: EmailStr
     folioE: str | None = None
     correoAl: EmailStr | None = None
 
