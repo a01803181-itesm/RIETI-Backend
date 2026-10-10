@@ -407,7 +407,11 @@ async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadRe
 
             if row:
                 logger.log(SUCCESS, "Total amount of reports and count of reports by estatus successfully fetched and returned")
-                return CantidadReportes(row[0], row[1], row[2], row[3])
+                return CantidadReportes(
+                    total=row[0],
+                    completados=row[1],
+                    en_proceso=row[2],
+                    pendientes=row[3])
             
             logger.warning("Unable to obtain the total amount of reports and the count of reports by status.")
             return None
