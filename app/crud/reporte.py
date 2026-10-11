@@ -1,3 +1,5 @@
+"""Módulo de operaciones CRUD y consultas analíticas para la entidad Reporte en MySQL."""
+
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
@@ -5,8 +7,19 @@ from app.schemas.reporte import Reporte, CantidadReportes
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
 
-# OBTENER REPORTE
 async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | None:
+    """Recupera la información completa de un reporte ciudadano mediante su identificador de folio.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        folio (str): Código alfanumérico único del reporte.
+
+    Returns:
+        Reporte | None: Instancia de Reporte con todos sus campos poblados si existe, o None si no fue encontrado.
+
+    Raises:
+        Exception: Si ocurre un error al ejecutar la consulta SQL o procesar los resultados.
+    """
     query = """
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
@@ -48,8 +61,18 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
         logger.error(f"Error finding reporte with folio {folio}: {e}")
         return None
 
-# OBTENER REPORTES
 async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
+    """Obtiene la lista completa de todos los reportes de trabajo infantil registrados en la plataforma.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[Reporte]: Lista de instancias de Reporte, o una lista vacía si no hay registros.
+
+    Raises:
+        Exception: Si ocurre un error de comunicación o fallo en la consulta.
+    """
     query = """
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
@@ -95,8 +118,18 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
         logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
         return []
 
-# OBTENER REPORTES POR ESTATUS
 async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]]:
+    """Calcula el total de expedientes agrupados por cada uno de sus posibles estatus administrativos.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas donde cada elemento contiene (estatus, conteo).
+
+    Raises:
+        Exception: Si ocurre un error durante el agrupamiento o la lectura de la base de datos.
+    """
     query = """
         SELECT estatus, COUNT(folioE)
         FROM Expediente
@@ -121,6 +154,18 @@ async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]
 
 
 async def get_cantidad_reportes_por_estatus_especifico(conn: MySQLConnection, estatus: str) -> int:
+    """Obtiene la cantidad total de reportes asociados a un estado de expediente específico.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        estatus (str): Nombre o clave del estatus a consultar (ej. '1_Registrado').
+
+    Returns:
+        int: Conteo total de reportes vinculados al estatus consultado.
+
+    Raises:
+        Exception: Si ocurre un error en la ejecución del JOIN o conteo en la base de datos.
+    """
     query = """
         SELECT COUNT(folio)
         FROM Reporte r
@@ -144,8 +189,18 @@ async def get_cantidad_reportes_por_estatus_especifico(conn: MySQLConnection, es
         logger.error(f"Error founding reports with status {estatus}: {e}")
         return 0
 
-# OBTENER REPORTES POR FECHA Y HORA
 async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
+    """Agrupa y contabiliza los reportes registrados según el mes de ocurrencia.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas conformadas por (nombre_del_mes, total_reportes).
+
+    Raises:
+        Exception: Si ocurre un error al ejecutar la función MONTHNAME o agrupar los datos.
+    """
     query = """
         SELECT MONTHNAME(dia), COUNT(folio)
         FROM Reporte
@@ -168,8 +223,18 @@ async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]
         logger.error(f"Error founding reports by date: {e}")
         return []
 
-# OBTENER REPORTES POR MUNICIPIO
 async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, int]]:
+    """Calcula la cantidad total de reportes desglosados geográficamente por municipio.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas con el formato (municipio, total_reportes).
+
+    Raises:
+        Exception: Si falla la consulta de agregación por municipio en la base de datos.
+    """
     query = """
         SELECT municipio, COUNT(folio)
         FROM Reporte
@@ -192,18 +257,23 @@ async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, i
         logger.error(f"Error founding reports by municipality: {e}")
         return []
 
-# OBTENER REPORTES POR RANGO DE HORA
 async def get_reportes_rango_hora(conn: MySQLConnection) -> list[tuple[str, int]]:
+    """Cuantifica los incidentes reportados agrupándolos por la hora del día en que tuvieron lugar.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas conteniendo (hora_del_dia, total_reportes).
+
+    Raises:
+        Exception: Si ocurre un error al extraer la hora o agrupar la información.
+    """
     query = """
         SELECT EXTRACT(HOUR FROM dia), COUNT(EXTRACT(HOUR FROM dia))
         FROM Reporte
         GROUP BY EXTRACT(HOUR FROM dia);
     """
-    # query = """
-    #     SELECT dia, COUNT(dia)
-    #     FROM Reporte
-    #     GROUP BY dia;
-    # """
 
     try:
         async with conn.cursor() as cur:
@@ -218,11 +288,21 @@ async def get_reportes_rango_hora(conn: MySQLConnection) -> list[tuple[str, int]
             logger.warning("No reports by hour were found")
             return []
     except Exception as e:
-        logger.error(f"Error founding reports by hour: ${e}")
+        logger.error(f"Error founding reports by hour: {e}")
         return []
 
-# OBTENER REPORTES POR AUTORIDAD
 async def get_reportes_por_autoridad(conn: MySQLConnection) -> list[tuple[str, int]]:
+    """Obtiene el número de reportes gestionados por cada autoridad o alimentador registrado.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas con el formato (nombre_completo_autoridad, total_reportes).
+
+    Raises:
+        Exception: Si se genera un fallo en el JOIN entre Reporte y Alimentador.
+    """
     query = """
         SELECT CONCAT(a.nombre, ' ', a.ap_paterno), COUNT(r.folio)
         FROM Reporte r
@@ -246,8 +326,18 @@ async def get_reportes_por_autoridad(conn: MySQLConnection) -> list[tuple[str, i
         logger.error(f"Error founding reports by autority: {e}")
         return []
 
-# OBTENER COORDENADAS (PARA MAPA DE CALOR)
 async def get_coordenadas_reportes(conn: MySQLConnection) -> list[tuple[float, float]]:
+    """Recupera los pares de coordenadas geográficas (latitud, longitud) de todos los reportes.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[float, float]]: Lista de tuplas con las coordenadas (latitud, longitud) en formato flotante.
+
+    Raises:
+        Exception: Si ocurre un error al consultar las coordenadas en la base de datos.
+    """
     query = """
         SELECT latitud, longitud
         FROM Reporte;
@@ -269,9 +359,18 @@ async def get_coordenadas_reportes(conn: MySQLConnection) -> list[tuple[float, f
         logger.error(f"Error fetching coordinates: {e}")
         return []
 
-    
-# OBTENER FECHA PROMEDIO DE RESOLUCIÓN DE REPORTES EN GENERAL (FECHA DE REGISTRO - HOY)
 async def get_promedio_de_resolucion(conn: MySQLConnection) -> float:
+    """Calcula el tiempo promedio en días transcurrido entre el registro y la conclusión de los casos resueltos.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        float: Promedio de días para resolución de casos concluidos ('5_Concluido'), o 0.0 si no hay casos.
+
+    Raises:
+        Exception: Si ocurre un error al calcular la diferencia de fechas o el promedio SQL.
+    """
     query = """
         SELECT COALESCE(AVG(DATEDIFF(CURDATE(), r.dia)), 0)
         FROM Reporte r
@@ -294,8 +393,18 @@ async def get_promedio_de_resolucion(conn: MySQLConnection) -> float:
         logger.error(f"Error founding the average of resolution: {e}")
         return 0.0
 
-# OBTENER REPORTES PENDIENTES REALIZADOS EN LA ÚLTIMA SEMANA
 async def get_reportes_pendientes_ultima_semana(conn: MySQLConnection) -> int:
+    """Calcula la cantidad de reportes pendientes de resolución creados en los últimos 7 días.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        int: Total de reportes pendientes generados durante la última semana.
+
+    Raises:
+        Exception: Si ocurre un error durante el filtrado por fecha y estatus en la consulta.
+    """
     query = """
         SELECT COUNT(folio)
         FROM Reporte r
@@ -320,8 +429,18 @@ async def get_reportes_pendientes_ultima_semana(conn: MySQLConnection) -> int:
         logger.error(f"Error founding pending reports made on the last seven days: {e}")
         return 0
 
-# OBTENER PORCENTAJE DE REPORTES TOTALES EN PROCESO
 async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
+    """Calcula el porcentaje de reportes que se encuentran en estatus de seguimiento respecto al total global.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        float: Valor porcentual (0.0 a 100.0) de reportes con estatus '3_En_seguimiento'.
+
+    Raises:
+        Exception: Si ocurre un error en la subconsulta de porcentajes o división en MySQL.
+    """
     query = """
         SELECT 
             COALESCE(
@@ -349,8 +468,18 @@ async def get_porcentaje_reportes_en_proceso(conn: MySQLConnection) -> float:
         logger.error(f"Error founding the percentage of pending reports: {e}")
         return 0.0
 
-# OBTENER PORCENTAJE DE REPORTES TOTALES EN ESTADO PENDIENTE
 async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
+    """Calcula el porcentaje de reportes que permanecen en estados preliminares ('1_Registrado' o '2_En_revision').
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        float: Proporción porcentual (0.0 a 100.0) de reportes pendientes frente al universo total.
+
+    Raises:
+        Exception: Si ocurre un error en la subconsulta o división por cero en la base de datos.
+    """
     query = """
         SELECT 
             COALESCE(
@@ -379,8 +508,18 @@ async def get_porcentaje_reportes_pendientes(conn: MySQLConnection) -> float:
         logger.error(f"Error founding the percentage of reports on process: {e}")
         return 0.0
 
-# OBTENER CANTIDAD DE REPORTES POR ESTATUS
 async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadReportes | None:
+    """Recupera un resumen consolidado de las cantidades de reportes totales, completados, en proceso y pendientes.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        CantidadReportes | None: Objeto CantidadReportes con las 4 métricas desglosadas, o None si no se pudo consultar.
+
+    Raises:
+        Exception: Si se produce un error en la evaluación de subconsultas simultáneas.
+    """
     query = """
         SELECT COUNT(folio),
             (SELECT COUNT(folio)
@@ -419,11 +558,19 @@ async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadRe
         logger.error(f"Error founding the total amount of reports and the count of reports by status: {e}")
         return None
 
-        
-
-
-# INSERTAR NUEVO REPORTE
 async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte | None:
+    """Inserta un nuevo registro de reporte ciudadano en la base de datos y confirma la transacción.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        reporte (Reporte): Modelo Pydantic con la información detallada del reporte a guardar.
+
+    Returns:
+        Reporte | None: La instancia de Reporte guardada en caso de éxito, o None si falló la inserción.
+
+    Raises:
+        Exception: Si se viola la unicidad del folio, fallan las llaves foráneas o se produce un error de conexión.
+    """
     query = """
         INSERT INTO Reporte
             (folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
@@ -464,8 +611,19 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
         logger.error(f"Error during reporte insertion: {e}")
         return None
 
-# OBTENER REPORTES POR CORREO
 async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailStr) -> list[Reporte]:
+    """Obtiene el historial completo de reportes creados por un usuario ciudadano específico.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        email (EmailStr): Correo electrónico del usuario denunciante.
+
+    Returns:
+        list[Reporte]: Lista de reportes generados por dicho usuario, o lista vacía si no tiene reportes.
+
+    Raises:
+        Exception: Si ocurre un error al consultar los reportes del usuario en la base de datos.
+    """
     query = """
         SELECT 
             folio, edad, dia, tipoTrabajo, numNinios,

@@ -1,3 +1,5 @@
+"""Módulo de operaciones CRUD para la entidad de Administrador en MySQL."""
+
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
 from app.schemas.admin import Admin
@@ -5,6 +7,18 @@ from app.core.logs import logger, SUCCESS
 from app.schemas.enums import Provider
 
 async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | None:
+    """Busca y recupera un administrador en la base de datos a partir de su correo electrónico.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        admin_email (EmailStr): Correo electrónico del administrador a consultar.
+
+    Returns:
+        Admin | None: Instancia de Admin si el registro existe en la base de datos, o None si no se encontró.
+
+    Raises:
+        Exception: Si ocurre un error de comunicación o fallo durante la ejecución de la consulta SQL.
+    """
     query = """
         SELECT
             correoAd, proveedor, nombre,
@@ -37,6 +51,17 @@ async def get_admin(conn: MySQLConnection, admin_email: EmailStr) -> Admin | Non
         return None
 
 async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
+    """Obtiene la lista completa de todos los administradores registrados en el sistema.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[Admin]: Lista de objetos Admin recuperados, o una lista vacía si no existen registros.
+
+    Raises:
+        Exception: Si se produce un error durante la ejecución de la consulta a la base de datos.
+    """
     query = """
         SELECT
             correoAd, proveedor, nombre,
@@ -71,6 +96,18 @@ async def get_all_admins(conn: MySQLConnection) -> list[Admin]:
         return []
 
 async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> Admin | None:
+    """Inserta un nuevo registro de administrador en la tabla Admin de MySQL.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        admin (Admin): Modelo Pydantic con los datos del administrador a insertar.
+
+    Returns:
+        Admin | None: El objeto Admin insertado en caso de éxito, o None si la operación no afectó filas.
+
+    Raises:
+        Exception: Si ocurre un error de clave duplicada, restricción de integridad o fallo en la transacción.
+    """
     query = """
         INSERT INTO Admin
             (correoAd, proveedor, nombre,

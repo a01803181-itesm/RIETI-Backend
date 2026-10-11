@@ -1,3 +1,9 @@
+"""Módulo de gestión y dependencia de conexión a la base de datos MySQL.
+
+Provee el generador asíncrono `get_db` para inyección de dependencias en endpoints de FastAPI,
+administrando la adquisición y liberación de conexiones del pool.
+"""
+
 from typing import AsyncGenerator
 from asyncmy import Connection as MySQLAsyncConnection
 from dotenv import load_dotenv
@@ -17,6 +23,21 @@ connection: Connection = Connection(
 db_manager: MySQLManager = MySQLManager(connection)
 
 async def get_db() -> AsyncGenerator[MySQLAsyncConnection, None]:
+    """Generador asíncrono para inyección de dependencias de conexión a la base de datos.
+
+    Adquiere una conexión activa del pool de MySQL durante el ciclo de vida de la petición HTTP
+    y garantiza su devolución al pool al finalizar la ejecución del endpoint.
+
+    Args:
+        None.
+
+    Returns:
+        AsyncGenerator[MySQLAsyncConnection, None]: Generador asíncrono que cede una conexión activa de MySQL.
+
+    Raises:
+        RuntimeError: Si el pool de conexiones no ha sido inicializado previamente.
+        Exception: Si ocurre un error al adquirir o liberar la conexión en el pool.
+    """
     conn = await db_manager.pool.acquire()
     try:
         yield conn

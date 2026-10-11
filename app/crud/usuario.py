@@ -1,3 +1,5 @@
+"""Módulo de operaciones CRUD para la entidad de Usuario (Ciudadano) en MySQL."""
+
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLAsyncConnection
 from app.schemas.usuario import Usuario
@@ -5,6 +7,18 @@ from app.core.logs import logger, SUCCESS
 from app.schemas.enums import Provider
 
 async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Usuario | None:
+    """Busca y recupera un usuario ciudadano en la base de datos a partir de su correo electrónico.
+
+    Args:
+        conn (MySQLAsyncConnection): Conexión activa a la base de datos MySQL.
+        userEmail (EmailStr): Correo electrónico del usuario a consultar.
+
+    Returns:
+        Usuario | None: Instancia de Usuario si existe en la base de datos, o None si no fue localizado.
+
+    Raises:
+        Exception: Si se suscita un error de ejecución o fallo de comunicación con la base de datos.
+    """
     query = """
         SELECT correoU, proveedor
         FROM Usuario
@@ -30,6 +44,17 @@ async def select_user(conn: MySQLAsyncConnection, userEmail: EmailStr) -> Usuari
         return None
 
 async def select_all_users(conn: MySQLAsyncConnection) -> list[Usuario]:
+    """Obtiene la lista completa de todos los usuarios ciudadanos registrados en el sistema.
+
+    Args:
+        conn (MySQLAsyncConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[Usuario]: Lista de objetos Usuario registrados, o lista vacía si la tabla no contiene filas.
+
+    Raises:
+        Exception: Si ocurre un error al consultar las filas en la base de datos.
+    """
     query = """
         SELECT correoU, proveedor
         FROM Usuario;
@@ -60,6 +85,18 @@ async def select_all_users(conn: MySQLAsyncConnection) -> list[Usuario]:
         return []
 
 async def insert_user(conn: MySQLAsyncConnection, user: Usuario) -> Usuario | None:
+    """Inserta un nuevo usuario ciudadano en la tabla Usuario de MySQL.
+
+    Args:
+        conn (MySQLAsyncConnection): Conexión activa a la base de datos MySQL.
+        user (Usuario): Modelo Pydantic con el correo y proveedor del usuario a insertar.
+
+    Returns:
+        Usuario | None: El objeto Usuario registrado satisfactoriamente, o None en caso de fallo.
+
+    Raises:
+        Exception: Si ocurre un error por clave primaria duplicada o fallo de transacción.
+    """
     query = """
         INSERT INTO Usuario
         (correoU, proveedor)
