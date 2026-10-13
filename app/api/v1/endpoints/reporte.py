@@ -10,7 +10,7 @@ from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -489,7 +489,7 @@ async def read_reporte_by_folio(
 
 @router.get(
     "/by-user/{user_email}",
-    response_model=list[Reporte],
+    response_model=list[ReportePublic],
     summary="Listar reportes creados por un usuario",
     description="Obtiene el historial de todos los reportes levantados por un usuario ciudadano identificado por su correo electrónico.",
     responses={

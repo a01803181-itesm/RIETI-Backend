@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 from pydantic_extra_types.coordinate import Latitude, Longitude
 from app.schemas.enums import RangoEdad, TipoTrabajo
+from app.schemas.expediente import Expediente
 
 class Reporte(BaseModel):
     """Modelo principal de reporte ciudadano sobre presunto caso de trabajo infantil.
@@ -227,4 +228,6 @@ class CantidadReportes(BaseModel):
         examples=[35]
     )
 
-
+class ReportePublic(BaseModel):
+    reporte: Reporte
+    expediente: Expediente | None = None

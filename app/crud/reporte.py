@@ -3,7 +3,8 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
-from app.schemas.reporte import Reporte, CantidadReportes
+from app.schemas.reporte import Reporte, CantidadReportes, ReportePublic
+from app.schemas.expediente import Expediente, Status
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
 
@@ -611,7 +612,7 @@ async def insert_new_reporte(conn: MySQLConnection, reporte: Reporte) -> Reporte
         logger.error(f"Error during reporte insertion: {e}")
         return None
 
-async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailStr) -> list[Reporte]:
+async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailStr) -> list[ReportePublic]:
     """Obtiene el historial completo de reportes creados por un usuario ciudadano específico.
 
     Args:
@@ -626,12 +627,12 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
     """
     query = """
         SELECT 
-            folio, edad, dia, tipoTrabajo, numNinios,
-            direccion, municipio, latitud, longitud,
-            nombre, ap_paterno, ap_materno, detalles_adcionales,
-            correoU, folioE, correoAl
-        FROM Reporte
-        WHERE correoU = %s;
+            r.folio, r.edad, r.dia, r.tipoTrabajo, r.numNinios,
+            r.direccion, r.municipio, r.latitud, r.longitud,
+            r.nombre, r.ap_paterno, r.ap_materno, r.detalles_adcionales,
+            r.correoU, r.folioE, r.correoAl, e.lugar, e.descripcion, e.estatus
+        FROM RIETI.Reporte r LEFT JOIN RIETI.Expediente e ON r.folioE = e.folioE
+        WHERE r.correoU = %s;
     """
 
     try:
@@ -642,8 +643,11 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
 
             if len(rows) > 0:
                 logger.log(SUCCESS, f"Successfully retrieved {len(rows)} reports from user with email {email}")
-                return [
-                    Reporte(
+                reportesResponse: list[ReportePublic] = []
+
+                for row in rows:
+                    expediente: Expediente | None = None
+                    reporte: Reporte = Reporte(
                         folio=row[0],
                         edad=RangoEdad(row[1]),
                         dia=row[2],
@@ -659,10 +663,22 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
                         detalles_adcionales=row[12],
                         correoU=row[13],
                         folioE=row[14],
-                        correoAl=row[15],
+                        correoAl=row[15]
                     )
-                    for row in rows
-                ]
+
+                    logger.info(f"FolioE: {row[14]}")
+                    if row[14] != None:
+                        expediente = Expediente(
+                            folioE=row[14],
+                            lugar=row[16],
+                            descripcion=row[17],
+                            status=Status(row[18]),
+                            correoAl=row[15]
+                        )
+
+                    reportesResponse.append(ReportePublic(reporte=reporte, expediente=expediente))
+
+                return reportesResponse
 
             logger.warning(f"There are no reports registered by user {email}")
             return []
