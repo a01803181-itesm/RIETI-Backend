@@ -117,8 +117,8 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
             return []
     except Exception as e:
         logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
-        # return []
-        raise e
+        return []
+        # raise e
 
 async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]]:
     """Calcula el total de expedientes agrupados por cada uno de sus posibles estatus administrativos.
