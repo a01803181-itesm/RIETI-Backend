@@ -94,14 +94,14 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
                     lista.append(
                         Reporte(
                             folio=row[0],
-                            edad=RangoEdad(row[1]) if row[1] is not None else "",
+                            edad=RangoEdad(row[1]),
                             dia=row[2],
-                            tipoTrabajo=TipoTrabajo(row[3]) if row[3] is not None else "",
+                            tipoTrabajo=TipoTrabajo(row[3]),
                             numNinios=row[4],
                             direccion=row[5],
                             municipio=row[6],
-                            latitud=float(row[7]) if row[7] is not None else 0.0,
-                            longitud=float(row[8]) if row[8] is not None else 0.0,
+                            latitud=float(row[7]),
+                            longitud=float(row[8]),
                             nombre=row[9],
                             ap_paterno=row[10],
                             ap_materno=row[11],
