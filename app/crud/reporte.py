@@ -94,14 +94,14 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
                     lista.append(
                         Reporte(
                             folio=row[0],
-                            edad=RangoEdad(row[1]),
+                            edad=RangoEdad(row[1]) if row[1] is not None else "",
                             dia=row[2],
-                            tipoTrabajo=TipoTrabajo(row[3]),
+                            tipoTrabajo=TipoTrabajo(row[3]) if row[3] is not None else "",
                             numNinios=row[4],
                             direccion=row[5],
                             municipio=row[6],
-                            latitud=float(row[7]),
-                            longitud=float(row[8]),
+                            latitud=float(row[7]) if row[7] is not None else 0.0,
+                            longitud=float(row[8]) if row[8] is not None else 0.0,
                             nombre=row[9],
                             ap_paterno=row[10],
                             ap_materno=row[11],
@@ -685,3 +685,40 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
     except Exception as e:
         logger.error(f"Error at retrieving reports linked by user {email}: {e}")
         return []
+
+
+async def get_c(conn: MySQLConnection) -> int:
+    """Calcula la cantidad de reportes pendientes de resolución creados en los últimos 7 días.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        int: Total de reportes pendientes generados durante la última semana.
+
+    Raises:
+        Exception: Si ocurre un error durante el filtrado por fecha y estatus en la consulta.
+    """
+    query = """
+        SELECT COUNT(folio)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        WHERE DATEDIFF(CURDATE(), dia) <= 7
+        AND estatus != "5_Concluido";
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, "Count of pending reports made on the last seven days fetched and returned successfully")
+                return int(row[0])
+
+            logger.warning("Unable to obtain the number of pending reports of the last seven days")
+            return 0
+    except Exception as e:
+        logger.error(f"Error founding pending reports made on the last seven days: {e}")
+        return 0
