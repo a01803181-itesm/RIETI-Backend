@@ -8,6 +8,8 @@ from app.schemas.expediente import Expediente, Status
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
 
+from fastapi import HTTPException, status
+
 async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | None:
     """Recupera la información completa de un reporte ciudadano mediante su identificador de folio.
 
@@ -62,18 +64,67 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
         logger.error(f"Error finding reporte with folio {folio}: {e}")
         return None
 
+# async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
+#     """Obtiene la lista completa de todos los reportes de trabajo infantil registrados en la plataforma.
+
+#     Args:
+#         conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+#     Returns:
+#         list[Reporte]: Lista de instancias de Reporte, o una lista vacía si no hay registros.
+
+#     Raises:
+#         Exception: Si ocurre un error de comunicación o fallo en la consulta.
+#     """
+#     query = """
+#         SELECT
+#             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+#             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+#             correoU, folioE, correoAl
+#         FROM Reporte;
+#     """
+
+#     try:
+#         async with conn.cursor() as cur:
+#             await cur.execute(query)
+#             rows = await cur.fetchall()
+
+#             if len(rows) > 0:
+#                 logger.log(SUCCESS, "All reportes rows were successfully fetched and returned")
+#                 lista = []
+#                 for row in rows:
+#                     lista.append(
+#                         Reporte(
+#                             folio=row[0],
+#                             edad=RangoEdad(row[1]),
+#                             dia=row[2],
+#                             tipoTrabajo=TipoTrabajo(row[3]),
+#                             numNinios=row[4],
+#                             direccion=row[5],
+#                             municipio=row[6],
+#                             latitud=float(row[7]),
+#                             longitud=float(row[8]),
+#                             nombre=row[9],
+#                             ap_paterno=row[10],
+#                             ap_materno=row[11],
+#                             detalles_adcionales=row[12],
+#                             correoU=row[13],
+#                             folioE=row[14],
+#                             correoAl=row[15]
+#                         )
+#                     )
+#                 return lista
+
+#             logger.warning("'Reporte' DB entity is empty")
+#             return []
+#     except Exception as e:
+#         logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
+#         return []
+#         # raise e
+
+from fastapi import HTTPException, status
+
 async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
-    """Obtiene la lista completa de todos los reportes de trabajo infantil registrados en la plataforma.
-
-    Args:
-        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
-
-    Returns:
-        list[Reporte]: Lista de instancias de Reporte, o una lista vacía si no hay registros.
-
-    Raises:
-        Exception: Si ocurre un error de comunicación o fallo en la consulta.
-    """
     query = """
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
@@ -87,10 +138,13 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
             await cur.execute(query)
             rows = await cur.fetchall()
 
-            if len(rows) > 0:
-                logger.log(SUCCESS, "All reportes rows were successfully fetched and returned")
-                lista = []
-                for row in rows:
+            if not rows:
+                return []
+
+            lista = []
+            for i, row in enumerate(rows):
+                try:
+                    # Intenta construir cada reporte
                     lista.append(
                         Reporte(
                             folio=row[0],
@@ -100,8 +154,8 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
                             numNinios=row[4],
                             direccion=row[5],
                             municipio=row[6],
-                            latitud=float(row[7]),
-                            longitud=float(row[8]),
+                            latitud=float(row[7]) if row[7] is not None else 0.0,
+                            longitud=float(row[8]) if row[8] is not None else 0.0,
                             nombre=row[9],
                             ap_paterno=row[10],
                             ap_materno=row[11],
@@ -111,14 +165,21 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
                             correoAl=row[15]
                         )
                     )
-                return lista
+                except Exception as row_error:
+                    # Si falla una fila en específico, nos dirá cuál fue y con qué datos
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Fallo en la fila {i} con datos {row}: {type(row_error).__name__} - {str(row_error)}"
+                    )
+            return lista
 
-            logger.warning("'Reporte' DB entity is empty")
-            return []
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
-        return []
-        # raise e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
+        )
 
 async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]]:
     """Calcula el total de expedientes agrupados por cada uno de sus posibles estatus administrativos.
