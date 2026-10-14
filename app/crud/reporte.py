@@ -222,7 +222,8 @@ async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]
             return []
     except Exception as e:
         logger.error(f"Error founding reports by date: {e}")
-        return []
+        raise e
+        # return []
 
 async def get_reportes_por_municipio(conn: MySQLConnection) -> list[tuple[str, int]]:
     """Calcula la cantidad total de reportes desglosados geográficamente por municipio.
