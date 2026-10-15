@@ -180,7 +180,7 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
             detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
         )
 
-async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
+async def get_all_reportes_with_status(conn: MySQLConnection) -> list[tuple[Reporte, str]]:
     query = """
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
@@ -199,7 +199,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
             if not rows:
                 return []
 
-            lista = []
+            lista = [tuple[Reporte, int]]
             for i, row in enumerate(rows):
                 try:
                     # Intenta construir cada reporte
@@ -220,10 +220,10 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
                             detalles_adcionales=row[12],
                             correoU=row[13],
                             folioE=row[14],
-                            correoAl=row[15],
-                            estatus=row[16] if row[16] is not None else "Ninguno"
+                            correoAl=row[15]
                         )
                     )
+                    lista.append(estatus=row[16])
                 except Exception as row_error:
                     # Si falla una fila en específico, nos dirá cuál fue y con qué datos
                     raise HTTPException(
