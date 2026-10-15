@@ -555,7 +555,7 @@ async def read_cantidad_reportes_por_estatus(db: MySQLConnection = Depends(get_d
     return data
 
 @router.get(
-    "/estatus",
+    "/detalles/estatus",
     response_model=list[Reporte],
     summary="Listar todos los reportes",
     description="Recupera la lista exhaustiva de todos los reportes de presunto trabajo infantil registrados en la plataforma con su estatus.",
