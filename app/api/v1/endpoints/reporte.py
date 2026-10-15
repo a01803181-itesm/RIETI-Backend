@@ -10,6 +10,7 @@ from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
+from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -583,3 +584,71 @@ async def read_all_reportes_con_estado(db: MySQLConnection = Depends(get_db)) ->
     """
     reportes = await get_all_reportes_with_status(db)
     return reportes
+
+@router.get(
+    "/estadisticas/estatus-por-alimentador/{correo_al}",
+    response_model=list[CategoriaTotal],
+    summary="Estadísticas de estatus por municipio del alimentador",
+    description="Calcula el conteo de expedientes por estatus filtrando únicamente por el municipio asociado al alimentador recibido.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CategoriaTotal],
+            "description": "Distribución por estatus para el municipio del alimentador obtenida exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar las estadísticas en la base de datos."
+        }
+    }
+)
+async def read_estatus_por_municipio_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Obtiene el desglose de expedientes por estatus limitados al municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de diccionarios con claves 'categoria' (estatus) y 'total' (conteo).
+
+    Raises:
+        None.
+    """
+    data = await get_conteo_expedientes_por_municipio(db, correo_al)
+    return [{"categoria": c, "total": t} for c, t in data]
+
+@router.get(
+    "/estadisticas/fecha-por-alimentador/{correo_al}",
+    response_model=list[CategoriaTotal],
+    summary="Estadísticas de reportes por mes según municipio del alimentador",
+    description="Devuelve el conteo mensual de reportes filtrados únicamente por el municipio asignado al alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CategoriaTotal],
+            "description": "Distribución mensual de reportes por municipio obtenida exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar las estadísticas en la base de datos."
+        }
+    }
+)
+async def read_reportes_por_fecha_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Consulta la cantidad de incidentes reportados agrupados por mes para el municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de diccionarios con claves 'categoria' (mes) y 'total' (número de reportes).
+
+    Raises:
+        None.
+    """
+    reportes = await get_reportes_por_tiempo_por_alimentador(db, correo_al)
+    return [{"categoria": c, "total": t} for c, t in reportes]
