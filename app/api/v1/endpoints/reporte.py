@@ -569,7 +569,7 @@ async def read_cantidad_reportes_por_estatus(db: MySQLConnection = Depends(get_d
         }
     }
 )
-async def read_all_reportes(db: MySQLConnection = Depends(get_db)) -> Any:
+async def read_all_reportes_con_estado(db: MySQLConnection = Depends(get_db)) -> Any:
     """Recupera la totalidad de reportes ciudadanos archivados en el sistema.
 
     Args:
