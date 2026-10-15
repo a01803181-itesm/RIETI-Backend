@@ -107,6 +107,113 @@ class Reporte(BaseModel):
         examples=["alimentador.toluca@rieti.org"]
     )
 
+
+class ReporteConEstatus(BaseModel):
+    """Modelo principal de reporte ciudadano sobre presunto caso de trabajo infantil.
+
+    Attributes:
+        folio (str): Código alfanumérico identificador único del reporte.
+        edad (RangoEdad): Grupo etario en el que se ubican los menores observados.
+        dia (datetime): Fecha y hora en que se suscitó o registró el incidente.
+        tipoTrabajo (TipoTrabajo): Categoría o tipología de la actividad identificada.
+        numNinios (int | None): Número estimado de menores en situación de trabajo.
+        direccion (str): Dirección exacta o referencias del punto geográfico.
+        municipio (str): Municipio donde se levantó la observación.
+        latitud (Latitude): Coordenada geográfica de latitud (-90 a 90).
+        longitud (Longitude): Coordenada geográfica de longitud (-180 a 180).
+        nombre (str | None): Nombre del denunciante (opcional).
+        ap_paterno (str | None): Primer apellido del denunciante (opcional).
+        ap_materno (str | None): Segundo apellido del denunciante (opcional).
+        detalles_adcionales (str | None): Información complementaria o señas particulares.
+        correoU (EmailStr): Correo electrónico del usuario ciudadano que reporta.
+        folioE (str | None): Folio del expediente vinculado si ya fue canalizado.
+        correoAl (EmailStr | None): Correo del alimentador o autoridad asignada.
+    """
+    folio: str = Field(
+        ...,
+        description="Código alfanumérico identificador único del reporte.",
+        examples=["REP-2026-TOL-001"]
+    )
+    edad: RangoEdad = Field(
+        ...,
+        description="Rango de edad aproximado de los infantes identificados."
+    )
+    dia: datetime = Field(
+        ...,
+        description="Fecha y hora de ocurrencia o registro del incidente.",
+        examples=["2026-10-10T14:30:00Z"]
+    )
+    tipoTrabajo: TipoTrabajo = Field(
+        ...,
+        description="Tipología o categoría de actividad de trabajo infantil detectada."
+    )
+    numNinios: int | None = Field(
+        default=None,
+        description="Cantidad aproximada de infantes involucrados en la escena observada.",
+        ge=0,
+        examples=[2]
+    )
+    direccion: str = Field(
+        ...,
+        description="Ubicación textual, calle, crucero o referencias del avistamiento.",
+        examples=["Av. Paseo Tollocan y Comonfort, Semáforo norte"]
+    )
+    municipio: str = Field(
+        ...,
+        description="Municipio en el cual se observó la situación.",
+        examples=["Toluca"]
+    )
+    latitud: Latitude = Field(
+        ...,
+        description="Coordenada geográfica de latitud (-90 a 90 grados).",
+        examples=[19.2826]
+    )
+    longitud: Longitude = Field(
+        ...,
+        description="Coordenada geográfica de longitud (-180 a 180 grados).",
+        examples=[-99.6557]
+    )
+    nombre: str | None = Field(
+        default=None,
+        description="Nombre(s) del ciudadano denunciante (opcional para mantener anonimato).",
+        examples=["Juan"]
+    )
+    ap_paterno: str | None = Field(
+        default=None,
+        description="Primer apellido del denunciante (opcional).",
+        examples=["Hernández"]
+    )
+    ap_materno: str | None = Field(
+        default=None,
+        description="Segundo apellido del denunciante (opcional).",
+        examples=["López"]
+    )
+    detalles_adcionales: str | None = Field(
+        default=None,
+        description="Detalles adicionales, señas particulares o contexto relevante.",
+        examples=["Venden dulces en el camellón central entre las 12:00 y las 16:00 horas."]
+    )
+    correoU: EmailStr = Field(
+        ...,
+        description="Correo del usuario ciudadano que emite el reporte.",
+        examples=["ciudadano.activo@gmail.com"]
+    )
+    folioE: str | None = Field(
+        default=None,
+        description="Folio del expediente administrativo asignado si ya fue canalizado.",
+        examples=["EXP-2026-TOL-042"]
+    )
+    correoAl: EmailStr | None = Field(
+        default=None,
+        description="Correo institucional de la autoridad o alimentador que da seguimiento.",
+        examples=["alimentador.toluca@rieti.org"]
+    )
+    estatus: str | None = Field(
+        default=None,
+        description="Estado en el que se encuentra el reporte.",
+        examples=["1_Registrado"]
+    )
+
 class CoordenadaReporte(BaseModel):
     """Par de coordenadas geográficas simplificadas para renderizado cartográfico y mapas de calor.
 

@@ -3,7 +3,7 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
-from app.schemas.reporte import Reporte, CantidadReportes, ReportePublic
+from app.schemas.reporte import Reporte, CantidadReportes, ReportePublic, ReporteConEstatus
 from app.schemas.expediente import Expediente, Status
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
@@ -204,7 +204,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[tuple[Repo
                 try:
                     # Intenta construir cada reporte
                     lista.append(
-                        Reporte(
+                        ReporteConEstatus(
                             folio=row[0],
                             edad=RangoEdad(row[1]),
                             dia=row[2],
@@ -220,10 +220,10 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[tuple[Repo
                             detalles_adcionales=row[12],
                             correoU=row[13],
                             folioE=row[14],
-                            correoAl=row[15]
+                            correoAl=row[15],
+                            estatus=row[16]
                         )
                     )
-                    lista.append(estatus=row[16])
                 except Exception as row_error:
                     # Si falla una fila en específico, nos dirá cuál fue y con qué datos
                     raise HTTPException(
