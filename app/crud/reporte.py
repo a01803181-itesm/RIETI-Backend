@@ -805,3 +805,41 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
     except Exception as e:
         logger.error(f"Error at retrieving reports linked by user {email}: {e}")
         return []
+async def get_conteo_expedientes_por_municipio(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[str, int]]:
+    """Calcula el total de expedientes por cada estatus, filtrados estrictamente
+    por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a MySQL.
+        correo_al (str): Correo del alimentador autenticado.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas con el formato (estatus, conteo).
+    """
+    query = """
+        SELECT 
+            e.estatus, 
+            COUNT(DISTINCT e.folioE) AS conteo
+        FROM Alimentador al
+        JOIN Reporte r ON r.municipio = al.municipio
+        JOIN Expediente e ON r.folioE = e.folioE
+        WHERE al.correoAl = %s
+        GROUP BY e.estatus;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, f"Conteo por estatus obtenido para el municipio de: {correo_al}")
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning(f"No se encontraron reportes/expedientes para el alimentador {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(f"Error al obtener el conteo de reportes por municipio para {correo_al}: {e}")
+        return []
