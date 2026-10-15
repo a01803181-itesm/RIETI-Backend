@@ -10,7 +10,7 @@ from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -556,12 +556,12 @@ async def read_cantidad_reportes_por_estatus(db: MySQLConnection = Depends(get_d
 
 @router.get(
     "/detalles/estatus",
-    response_model=list[Reporte],
+    response_model=list[ReporteConEstatus],
     summary="Listar todos los reportes",
     description="Recupera la lista exhaustiva de todos los reportes de presunto trabajo infantil registrados en la plataforma con su estatus.",
     responses={
         status.HTTP_200_OK: {
-            "model": list[Reporte],
+            "model": list[ReporteConEstatus],
             "description": "Listado de reportes obtenido exitosamente."
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
