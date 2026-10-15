@@ -180,7 +180,7 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
             detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
         )
 
-async def get_all_reportes_with_status(conn: MySQLConnection) -> list[tuple[Reporte, str]]:
+async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteConEstatus]:
     query = """
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
