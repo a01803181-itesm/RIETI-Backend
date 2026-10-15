@@ -199,7 +199,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
             if not rows:
                 return []
 
-            lista = [tuple[Reporte, int]]
+            lista = []
             for i, row in enumerate(rows):
                 try:
                     # Intenta construir cada reporte
