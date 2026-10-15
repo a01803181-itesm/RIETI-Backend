@@ -185,7 +185,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
         SELECT
             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
-            correoU, folioE, correoAl, estatus
+            correoU, r.folioE, correoAl, estatus
         FROM Reporte r
         JOIN Expediente e ON e.folioE = r.folioE
         GROUP BY r.folio;
