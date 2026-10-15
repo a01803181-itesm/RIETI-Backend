@@ -273,7 +273,6 @@ async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]
         logger.error(f"Error founding reports with a status: {e}")
         return []
 
-
 async def get_cantidad_reportes_por_estatus_especifico(conn: MySQLConnection, estatus: str) -> int:
     """Obtiene la cantidad total de reportes asociados a un estado de expediente específico.
 
@@ -311,6 +310,7 @@ async def get_cantidad_reportes_por_estatus_especifico(conn: MySQLConnection, es
         return 0
 
 async def get_reportes_por_tiempo(conn: MySQLConnection) -> list[tuple[str, int]]:
+    
     """Agrupa y contabiliza los reportes registrados según el mes de ocurrencia.
 
     Args:
@@ -805,6 +805,7 @@ async def select_all_reportes_by_user_email(conn: MySQLConnection, email: EmailS
     except Exception as e:
         logger.error(f"Error at retrieving reports linked by user {email}: {e}")
         return []
+
 async def get_conteo_expedientes_por_municipio(
     conn: MySQLConnection, correo_al: str
 ) -> list[tuple[str, int]]:
@@ -843,3 +844,48 @@ async def get_conteo_expedientes_por_municipio(
     except Exception as e:
         logger.error(f"Error al obtener el conteo de reportes por municipio para {correo_al}: {e}")
         return []
+    
+async def get_reportes_por_tiempo_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[str, int]]:
+    """Agrupa y contabiliza los reportes registrados según el mes de ocurrencia,
+    filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas conformadas por (nombre_del_mes, total_reportes).
+
+    Raises:
+        Exception: Si ocurre un error al ejecutar la consulta o agrupar los datos.
+    """
+    query = """
+        SELECT MONTHNAME(r.dia), COUNT(r.folio)
+        FROM Reporte r
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE al.correoAl = %s
+        GROUP BY MONTH(r.dia), MONTHNAME(r.dia);
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(
+                    SUCCESS,
+                    f"Number of reports by date for alimentador {correo_al} successfully fetched and returned"
+                )
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning(f"No reports with date found for alimentador {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(f"Error finding reports by date for alimentador {correo_al}: {e}")
+        return []
+    
+    
