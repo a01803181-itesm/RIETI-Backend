@@ -221,7 +221,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
                             correoU=row[13],
                             folioE=row[14],
                             correoAl=row[15],
-                            estatus=row[16]
+                            estatus=row[16] if row[16] is not None else "Ninguno"
                         )
                     )
                 except Exception as row_error:
