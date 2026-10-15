@@ -181,6 +181,65 @@ async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
             detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
         )
 
+async def get_all_reportes_with_status(conn: MySQLConnection) -> list[Reporte]:
+    query = """
+        SELECT
+            folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+            latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, folioE, correoAl, estatus
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
+
+            if not rows:
+                return []
+
+            lista = []
+            for i, row in enumerate(rows):
+                try:
+                    # Intenta construir cada reporte
+                    lista.append(
+                        Reporte(
+                            folio=row[0],
+                            edad=RangoEdad(row[1]),
+                            dia=row[2],
+                            tipoTrabajo=TipoTrabajo(row[3]),
+                            numNinios=row[4],
+                            direccion=row[5],
+                            municipio=row[6],
+                            latitud=float(row[7]) if row[7] is not None else 0.0,
+                            longitud=float(row[8]) if row[8] is not None else 0.0,
+                            nombre=row[9],
+                            ap_paterno=row[10],
+                            ap_materno=row[11],
+                            detalles_adcionales=row[12],
+                            correoU=row[13],
+                            folioE=row[14],
+                            correoAl=row[15],
+                            estatus=row[16]
+                        )
+                    )
+                except Exception as row_error:
+                    # Si falla una fila en específico, nos dirá cuál fue y con qué datos
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Fallo en la fila {i} con datos {row}: {type(row_error).__name__} - {str(row_error)}"
+                    )
+            return lista
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
+        )
+
 async def get_reportes_por_status(conn: MySQLConnection) -> list[tuple[str, int]]:
     """Calcula el total de expedientes agrupados por cada uno de sus posibles estatus administrativos.
 
