@@ -188,7 +188,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
             correoU, r.folioE, r.correoAl, estatus
         FROM Reporte r
         JOIN Expediente e ON e.folioE = r.folioE
-        ORDER BY dia;
+        ORDER BY dia DESC;
     """
 
     try:
