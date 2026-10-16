@@ -1247,3 +1247,46 @@ async def get_reportes_por_tipo_trabajo_por_alimentador(
         )
         return []
     
+async def get_reportes_por_autoridad_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[str, int]]:
+    """Obtiene el nombre de los alimentadores de un mismo municipio y la cantidad de reportes asignados a cada uno.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador que consulta.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas conformadas por (nombre_alimentador, total_reportes).
+    """
+    query = """
+        SELECT 
+            al.nombre AS nombre,
+            COUNT(r.folio) AS total
+        FROM Alimentador al
+        JOIN Alimentador al_consulta ON al.municipio = al_consulta.municipio
+        LEFT JOIN Reporte r ON r.correoAl = al.correoAl
+        WHERE al_consulta.correoAl = %s
+        GROUP BY al.correoAl, al.nombre;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+            rows = await cur.fetchall()
+
+            if rows:
+                logger.log(
+                    SUCCESS, 
+                    f"Reports by authority fetched for municipality of {correo_al}"
+                )
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning(f"No authorities found for municipality of {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(f"Error fetching reports by authority for {correo_al}: {e}")
+        return []
+    
+    
+    
