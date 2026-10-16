@@ -1066,3 +1066,54 @@ async def get_reportes_pendientes_ultima_semana_por_alimentador(
             f"Error finding pending reports in last 7 days for alimentador {correo_al}: {e}"
         )
         return 0
+    
+async def get_porcentaje_reportes_en_proceso_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> float:
+    """Calcula el porcentaje de reportes en estatus de seguimiento ('3_En_seguimiento')
+    respecto al total de reportes del municipio del alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        float: Valor porcentual (0.0 a 100.0) de reportes en seguimiento en el municipio.
+
+    Raises:
+        Exception: Si ocurre un error en la subconsulta de porcentajes o división en MySQL.
+    """
+    query = """
+        SELECT 
+            COALESCE(
+                (SELECT COUNT(r.folio)
+                 FROM Reporte r
+                 JOIN Expediente e ON e.folioE = r.folioE
+                 JOIN Alimentador al ON r.municipio = al.municipio
+                 WHERE e.estatus = '3_En_seguimiento' AND al.correoAl = %s)
+                / 
+                NULLIF((SELECT COUNT(r.folio)
+                        FROM Reporte r
+                        JOIN Alimentador al ON r.municipio = al.municipio
+                        WHERE al.correoAl = %s), 0) * 100, 0);
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al, correo_al))
+
+            row = await cur.fetchone()
+
+            if row and row[0] is not None:
+                logger.log(
+                    SUCCESS,
+                    f"Percentage in process fetched and returned successfully for alimentador {correo_al}"
+                )
+                return float(row[0])
+
+            return 0.0
+    except Exception as e:
+        logger.error(
+            f"Error finding the percentage of reports in process for alimentador {correo_al}: {e}"
+        )
+        return 0.0
