@@ -11,7 +11,7 @@ from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_e
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
-from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador
+from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -756,4 +756,39 @@ async def read_promedio_resolucion_alimentador(
         None.
     """
     data = await get_promedio_de_resolucion_por_alimentador(db, correo_al)
+    return {"data": data}
+
+
+@router.get(
+    "/estadisticas/pendientes-ultima-semana/por-alimentador/{correo_al}",
+    response_model=DataInt,
+    summary="Reportes pendientes de la última semana por municipio del alimentador",
+    description="Devuelve el número de reportes pendientes de resolución creados en los últimos 7 días en el municipio del alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": DataInt,
+            "description": "Total de reportes pendientes de los últimos 7 días obtenido exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar la métrica en la base de datos."
+        }
+    }
+)
+async def read_pendientes_ultima_semana_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Consulta la cantidad de incidentes reportados en la última semana pendientes de conclusión para el municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Objeto DataInt con el número entero de reportes pendientes.
+
+    Raises:
+        None.
+    """
+    data = await get_reportes_pendientes_ultima_semana_por_alimentador(db, correo_al)
     return {"data": data}

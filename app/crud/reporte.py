@@ -1017,3 +1017,52 @@ async def get_promedio_de_resolucion_por_alimentador(
     except Exception as e:
         logger.error(f"Error finding the average resolution for alimentador {correo_al}: {e}")
         return 0.0
+    
+async def get_reportes_pendientes_ultima_semana_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> int:
+    """Calcula la cantidad de reportes pendientes de resolución creados en los últimos 7 días,
+    filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        int: Total de reportes pendientes generados durante la última semana en ese municipio.
+
+    Raises:
+        Exception: Si ocurre un error durante el filtrado por fecha, estatus o municipio.
+    """
+    query = """
+        SELECT COUNT(r.folio)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE DATEDIFF(CURDATE(), r.dia) <= 7
+        AND e.estatus != '5_Concluido'
+        AND al.correoAl = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(
+                    SUCCESS,
+                    f"Count of pending reports in last 7 days fetched for alimentador {correo_al}"
+                )
+                return int(row[0])
+
+            logger.warning(
+                f"Unable to obtain pending reports in last 7 days for alimentador {correo_al}"
+            )
+            return 0
+    except Exception as e:
+        logger.error(
+            f"Error finding pending reports in last 7 days for alimentador {correo_al}: {e}"
+        )
+        return 0
