@@ -11,6 +11,7 @@ from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_e
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
+from app.crud.reporte import get_coordenadas_reportes_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -688,3 +689,37 @@ async def read_reportes_por_rango_hora_alimentador(
     """
     reportes = await get_reportes_rango_hora_por_alimentador(db, correo_al)
     return [{"categoria": c, "total": t} for c, t in reportes]
+
+@router.get(
+    "/mapa-calor/por-alimentador/{correo_al}",
+    response_model=list[CoordenadaReporte],
+    summary="Coordenadas para mapa de calor según municipio del alimentador",
+    description="Extrae los pares de latitud y longitud de los reportes geolocalizados del municipio asignado al alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CoordenadaReporte],
+            "description": "Listado de coordenadas geográficas obtenido exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al recuperar las coordenadas."
+        }
+    }
+)
+async def read_coordenadas_mapa_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Extrae las coordenadas de latitud y longitud de los reportes pertenecientes al municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de objetos CoordenadaReporte con 'lat' y 'lng'.
+
+    Raises:
+        None.
+    """
+    coordenadas = await get_coordenadas_reportes_por_alimentador(db, correo_al)
+    return [{"lat": lat, "lng": lng} for lat, lng in coordenadas]

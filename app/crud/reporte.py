@@ -933,3 +933,45 @@ async def get_reportes_rango_hora_por_alimentador(
     except Exception as e:
         logger.error(f"Error finding reports by hour for alimentador {correo_al}: {e}")
         return []
+    
+async def get_coordenadas_reportes_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[float, float]]:
+    """Recupera los pares de coordenadas geográficas (latitud, longitud) de los reportes,
+    filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        list[tuple[float, float]]: Lista de tuplas con las coordenadas (latitud, longitud) en formato flotante.
+
+    Raises:
+        Exception: Si ocurre un error al consultar las coordenadas en la base de datos.
+    """
+    query = """
+        SELECT r.latitud, r.longitud
+        FROM Reporte r
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE al.correoAl = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(
+                    SUCCESS,
+                    f"List of coordinates for alimentador {correo_al} fetched and returned successfully"
+                )
+                return [(float(row[0]), float(row[1])) for row in rows]
+
+            logger.warning(f"Unable to obtain coordinates. No reports were found for alimentador {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(f"Error fetching coordinates for alimentador {correo_al}: {e}")
+        return []
