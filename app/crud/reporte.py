@@ -94,7 +94,7 @@ async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) ->
 
             if row:
                 logger.log(SUCCESS, f"Reporte with folio {folio} successfully found and fetched")
-                return Reporte(
+                return ReporteConEstatus(
                     folio=row[0],
                     edad=RangoEdad(row[1]),
                     dia=row[2],
