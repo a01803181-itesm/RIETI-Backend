@@ -1172,3 +1172,78 @@ async def get_porcentaje_reportes_pendientes_por_alimentador(
         return 0.0
     
     
+async def get_reportes_por_tipo_trabajo(
+    conn: MySQLConnection
+) -> list[tuple[str, int]]:
+    """Calcula la cantidad total de reportes agrupados por cada categoría de tipoTrabajo.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas (tipoTrabajo, conteo).
+    """
+    query = """
+        SELECT tipoTrabajo, COUNT(folio)
+        FROM Reporte
+        WHERE tipoTrabajo IS NOT NULL
+        GROUP BY tipoTrabajo;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query)
+            rows = await cur.fetchall()
+
+            if rows:
+                logger.log(SUCCESS, "Reports by work type successfully fetched")
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning("No reports found by work type")
+            return []
+    except Exception as e:
+        logger.error(f"Error fetching reports by work type: {e}")
+        return []
+
+
+async def get_reportes_por_tipo_trabajo_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[str, int]]:
+    """Calcula la cantidad de reportes agrupados por categoría de tipoTrabajo,
+    filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas (tipoTrabajo, conteo).
+    """
+    query = """
+        SELECT r.tipoTrabajo, COUNT(r.folio)
+        FROM Reporte r
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE al.correoAl = %s AND r.tipoTrabajo IS NOT NULL
+        GROUP BY r.tipoTrabajo;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+            rows = await cur.fetchall()
+
+            if rows:
+                logger.log(
+                    SUCCESS,
+                    f"Reports by work type successfully fetched for alimentador {correo_al}"
+                )
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning(f"No reports by work type found for alimentador {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(
+            f"Error fetching reports by work type for alimentador {correo_al}: {e}"
+        )
+        return []
+    

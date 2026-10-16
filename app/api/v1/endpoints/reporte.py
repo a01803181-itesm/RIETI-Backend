@@ -12,7 +12,7 @@ from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
-from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador
+from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador,get_reportes_por_tipo_trabajo, get_reportes_por_tipo_trabajo_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -861,3 +861,64 @@ async def read_porcentaje_pendientes_alimentador(
     """
     data = await get_porcentaje_reportes_pendientes_por_alimentador(db, correo_al)
     return {"data": data}
+
+@router.get(
+    "/estadisticas/tipo-trabajo",
+    response_model=list[CategoriaTotal],
+    summary="Estadísticas de reportes por tipo de trabajo (Global)",
+    description="Devuelve la cantidad de reportes agrupados por cada tipo de trabajo infantil a nivel global/todos los municipios.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CategoriaTotal],
+            "description": "Distribución por tipo de trabajo obtenida exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar las estadísticas en la base de datos."
+        }
+    }
+)
+async def read_reportes_por_tipo_trabajo(
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Consulta la distribución general de reportes agrupados por tipo de trabajo.
+
+    Args:
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de diccionarios con claves 'categoria' (tipoTrabajo) y 'total' (conteo).
+    """
+    data = await get_reportes_por_tipo_trabajo(db)
+    return [{"categoria": c, "total": t} for c, t in data]
+
+
+@router.get(
+    "/estadisticas/tipo-trabajo-por-alimentador/{correo_al}",
+    response_model=list[CategoriaTotal],
+    summary="Estadísticas de reportes por tipo de trabajo según municipio del alimentador",
+    description="Devuelve la cantidad de reportes agrupados por tipo de trabajo infantil filtrados por el municipio del alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CategoriaTotal],
+            "description": "Distribución por tipo de trabajo del municipio obtenida exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar las estadísticas en la base de datos."
+        }
+    }
+)
+async def read_reportes_por_tipo_trabajo_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Consulta la distribución de reportes por tipo de trabajo para el municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de diccionarios con claves 'categoria' (tipoTrabajo) y 'total' (conteo).
+    """
+    data = await get_reportes_por_tipo_trabajo_por_alimentador(db, correo_al)
+    return [{"categoria": c, "total": t} for c, t in data]
