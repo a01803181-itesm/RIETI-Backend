@@ -12,7 +12,7 @@ from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
-from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador
+from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -826,4 +826,38 @@ async def read_porcentaje_en_proceso_alimentador(
         None.
     """
     data = await get_porcentaje_reportes_en_proceso_por_alimentador(db, correo_al)
+    return {"data": data}
+
+@router.get(
+    "/pendientes/por-alimentador/{correo_al}",
+    response_model=Data,
+    summary="Porcentaje de reportes pendientes por municipio del alimentador",
+    description="Calcula la proporción porcentual de reportes que se encuentran en espera de atención ('1_Registrado' o '2_En_revision') respecto al total del municipio del alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": Data,
+            "description": "Porcentaje de casos pendientes calculado exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al calcular el porcentaje."
+        }
+    }
+)
+async def read_porcentaje_pendientes_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Calcula el porcentaje de casos sin atender respecto al total de reportes del municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Objeto Data con el valor porcentual (0.0 a 100.0).
+
+    Raises:
+        None.
+    """
+    data = await get_porcentaje_reportes_pendientes_por_alimentador(db, correo_al)
     return {"data": data}

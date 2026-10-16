@@ -1117,3 +1117,58 @@ async def get_porcentaje_reportes_en_proceso_por_alimentador(
             f"Error finding the percentage of reports in process for alimentador {correo_al}: {e}"
         )
         return 0.0
+    
+    
+async def get_porcentaje_reportes_pendientes_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> float:
+    """Calcula el porcentaje de reportes que permanecen en estados preliminares 
+    ('1_Registrado' o '2_En_revision') respecto al total del municipio del alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        float: Proporción porcentual (0.0 a 100.0) de reportes pendientes en el municipio.
+
+    Raises:
+        Exception: Si ocurre un error en la subconsulta o división por cero en MySQL.
+    """
+    query = """
+        SELECT 
+            COALESCE(
+                (SELECT COUNT(r.folio)
+                 FROM Reporte r
+                 JOIN Expediente e ON e.folioE = r.folioE
+                 JOIN Alimentador al ON r.municipio = al.municipio
+                 WHERE (e.estatus = '1_Registrado' OR e.estatus = '2_En_revision') 
+                   AND al.correoAl = %s)
+                /
+                NULLIF((SELECT COUNT(r.folio)
+                        FROM Reporte r
+                        JOIN Alimentador al ON r.municipio = al.municipio
+                        WHERE al.correoAl = %s), 0) * 100, 0);
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al, correo_al))
+
+            row = await cur.fetchone()
+
+            if row and row[0] is not None:
+                logger.log(
+                    SUCCESS,
+                    f"Pending percentage fetched and returned successfully for alimentador {correo_al}"
+                )
+                return float(row[0])
+
+            return 0.0
+    except Exception as e:
+        logger.error(
+            f"Error finding the percentage of pending reports for alimentador {correo_al}: {e}"
+        )
+        return 0.0
+    
+    
