@@ -652,3 +652,39 @@ async def read_reportes_por_fecha_alimentador(
     """
     reportes = await get_reportes_por_tiempo_por_alimentador(db, correo_al)
     return [{"categoria": c, "total": t} for c, t in reportes]
+
+
+@router.get(
+    "/estadisticas/por-rango-hora-por-alimentador/{correo_al}",
+    response_model=list[CategoriaTotal],
+    summary="Estadísticas de reportes por rango de hora según municipio del alimentador",
+    description="Agrupa y cuantifica los reportes según la hora del día en que se suscitaron, filtrando únicamente por el municipio asignado al alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[CategoriaTotal],
+            "description": "Frecuencia horaria de reportes obtenida exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al procesar los rangos horarios."
+        }
+    }
+)
+
+async def read_reportes_por_rango_hora_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Consulta la distribución horaria de los reportes para el municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Lista de diccionarios con claves 'categoria' (hora) y 'total' (cantidad).
+
+    Raises:
+        None.
+    """
+    reportes = await get_reportes_rango_hora_por_alimentador(db, correo_al)
+    return [{"categoria": c, "total": t} for c, t in reportes]

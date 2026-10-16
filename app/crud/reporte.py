@@ -889,4 +889,47 @@ async def get_reportes_por_tiempo_por_alimentador(
         logger.error(f"Error finding reports by date for alimentador {correo_al}: {e}")
         return []
     
-    
+
+async def get_reportes_rango_hora_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[tuple[str, int]]:
+    """Cuantifica los incidentes reportados agrupándolos por la hora del día en que tuvieron lugar,
+    filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        list[tuple[str, int]]: Lista de tuplas conteniendo (hora_del_dia, total_reportes).
+
+    Raises:
+        Exception: Si ocurre un error al extraer la hora o agrupar la información.
+    """
+    query = """
+        SELECT EXTRACT(HOUR FROM r.dia), COUNT(EXTRACT(HOUR FROM r.dia))
+        FROM Reporte r
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE al.correoAl = %s
+        GROUP BY EXTRACT(HOUR FROM r.dia)
+        ORDER BY EXTRACT(HOUR FROM r.dia) ASC;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(
+                    SUCCESS,
+                    f"Reports by hour for alimentador {correo_al} successfully fetched and returned"
+                )
+                return [(str(row[0]), int(row[1])) for row in rows]
+
+            logger.warning(f"No reports by hour were found for alimentador {correo_al}")
+            return []
+    except Exception as e:
+        logger.error(f"Error finding reports by hour for alimentador {correo_al}: {e}")
+        return []
