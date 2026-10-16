@@ -64,6 +64,62 @@ async def get_reporte_by_folio(conn: MySQLConnection, folio: str) -> Reporte | N
         logger.error(f"Error finding reporte with folio {folio}: {e}")
         return None
 
+async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) -> ReporteConEstatus | None:
+    """Recupera la información completa de un reporte ciudadano mediante su identificador de folio.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        folio (str): Código alfanumérico único del reporte.
+
+    Returns:
+        Reporte | None: Instancia de Reporte con todos sus campos poblados si existe, o None si no fue encontrado.
+
+    Raises:
+        Exception: Si ocurre un error al ejecutar la consulta SQL o procesar los resultados.
+    """
+    query = """
+        SELECT
+            folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
+            latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
+            correoU, r.folioE, r.correoAl, estatus
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        WHERE folio = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (folio,))
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, f"Reporte with folio {folio} successfully found and fetched")
+                return Reporte(
+                    folio=row[0],
+                    edad=RangoEdad(row[1]),
+                    dia=row[2],
+                    tipoTrabajo=TipoTrabajo(row[3]),
+                    numNinios=row[4],
+                    direccion=row[5],
+                    municipio=row[6],
+                    latitud=float(row[7]),
+                    longitud=float(row[8]),
+                    nombre=row[9],
+                    ap_paterno=row[10],
+                    ap_materno=row[11],
+                    detalles_adcionales=row[12],
+                    correoU=row[13],
+                    folioE=row[14],
+                    correoAl=row[15],
+                    estatus=row[16]
+                )
+
+            logger.warning(f"Reporte with folio {folio} not found")
+            return None
+    except Exception as e:
+        logger.error(f"Error finding reporte with folio {folio}: {e}")
+        return None
+
 # async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
 #     """Obtiene la lista completa de todos los reportes de trabajo infantil registrados en la plataforma.
 
