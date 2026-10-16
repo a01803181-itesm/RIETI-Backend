@@ -11,7 +11,7 @@ from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_e
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
-from app.crud.reporte import get_coordenadas_reportes_por_alimentador
+from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
 from app.core.db_connection import get_db
 
@@ -723,3 +723,37 @@ async def read_coordenadas_mapa_alimentador(
     """
     coordenadas = await get_coordenadas_reportes_por_alimentador(db, correo_al)
     return [{"lat": lat, "lng": lng} for lat, lng in coordenadas]
+
+@router.get(
+    "/estadisticas/promedio-resolucion/por-alimentador/{correo_al}",
+    response_model=Data,
+    summary="Promedio de días de resolución por municipio del alimentador",
+    description="Calcula el promedio en días transcurridos desde el registro hasta la conclusión de los casos resueltos, del municipio del alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": Data,
+            "description": "Promedio de días de resolución calculado exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al calcular el promedio de resolución."
+        }
+    }
+)
+async def read_promedio_resolucion_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Calcula el promedio de días que tardan los reportes en concluir para el municipio del alimentador.
+
+    Args:
+        correo_al (EmailStr): Correo electrónico del alimentador que consulta.
+        db (MySQLConnection): Conexión activa a la base de datos inyectada por dependencia.
+
+    Returns:
+        Any: Objeto Data con el valor float del promedio de resolución.
+
+    Raises:
+        None.
+    """
+    data = await get_promedio_de_resolucion_por_alimentador(db, correo_al)
+    return {"data": data}

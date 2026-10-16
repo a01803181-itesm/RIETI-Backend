@@ -975,3 +975,45 @@ async def get_coordenadas_reportes_por_alimentador(
     except Exception as e:
         logger.error(f"Error fetching coordinates for alimentador {correo_al}: {e}")
         return []
+    
+async def get_promedio_de_resolucion_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> float:
+    """Calcula el tiempo promedio en días transcurrido entre el registro y la conclusión
+    de los casos resueltos, filtrado por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        float: Promedio de días para resolución de casos concluidos ('5_Concluido'), o 0.0 si no hay casos.
+
+    Raises:
+        Exception: Si ocurre un error al calcular la diferencia de fechas o el promedio SQL.
+    """
+    query = """
+        SELECT COALESCE(AVG(DATEDIFF(CURDATE(), r.dia)), 0)
+        FROM Reporte r
+        JOIN Expediente e ON e.folioE = r.folioE
+        JOIN Alimentador al ON r.municipio = al.municipio
+        WHERE e.estatus = '5_Concluido' AND al.correoAl = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+
+            row = await cur.fetchone()
+
+            if row and row[0] is not None:
+                logger.log(
+                    SUCCESS,
+                    f"Average resolution time fetched and returned successfully for alimentador {correo_al}"
+                )
+                return float(row[0])
+
+            return 0.0
+    except Exception as e:
+        logger.error(f"Error finding the average resolution for alimentador {correo_al}: {e}")
+        return 0.0
