@@ -1309,7 +1309,7 @@ async def update_reporte_in_db(
 
     values = list(fields.values()) + [folio]
 
-    query = f"""
+    query = """
         UPDATE Reporte
         SET {set_clause}
         WHERE folio = %s
