@@ -13,8 +13,8 @@ from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, g
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
 from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador,get_reportes_por_tipo_trabajo, get_reportes_por_tipo_trabajo_por_alimentador
-from app.crud.reporte import get_reportes_por_autoridad_por_alimentador
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus
+from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -994,3 +994,56 @@ async def read_reportes_por_autoridad_alimentador(
     """Consulta los reportes asignados por alimentador/autoridad dentro del municipio."""
     data = await get_reportes_por_autoridad_por_alimentador(db, correo_al)
     return [{"categoria": c, "total": t} for c, t in data]
+
+@router.patch(
+    "/${folio}/estatus",
+    response_model=ReporteConEstatus,
+    status_code=status.HTTP_200_OK,
+    summary="Actualizar parcialmente un reporte",
+    description="Actualiza únicamente los campos proporcionados por el administrador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ReporteConEstatus,
+            "description": "Reporte actualizado correctamente."
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "El reporte no existe."
+        },
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "description": "Datos de entrada no válidos."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error durante la actualización en la base de datos."
+        }
+    }
+)
+async def update_reporte(
+    folio: str,
+    reporte: ReporteUpdate,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Actualiza parcialmente un reporte existente."""
+
+    reporte_data = reporte.model_dump(exclude_unset=True)
+
+    if not reporte_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se proporcionaron campos para actualizar."
+        )
+
+    updated_reporte = await update_reporte_in_db(
+        db,
+        folio,
+        reporte_data
+    )
+
+    if not updated_reporte:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reporte not found"
+        )
+
+    await db.commit()
+
+    return updated_reporte

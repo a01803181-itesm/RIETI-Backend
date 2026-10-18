@@ -107,6 +107,10 @@ class Reporte(BaseModel):
         examples=["alimentador.toluca@rieti.org"]
     )
 
+class ReporteUpdate(BaseModel):
+    correoAl: EmailStr | None = None
+    estatus: str | None = None
+
 
 class ReporteConEstatus(BaseModel):
     """Modelo principal de reporte ciudadano sobre presunto caso de trabajo infantil.

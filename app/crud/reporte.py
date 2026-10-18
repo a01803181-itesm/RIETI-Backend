@@ -1286,4 +1286,36 @@ async def get_reportes_por_autoridad_por_alimentador(
         return []
     
     
+async def update_reporte_in_db(
+        conn: MySQLConnection,
+        folio: str,
+        reporte_data: dict
+) -> ReporteConEstatus | None:
     
+    allowed_fields = {"estatus", "correoAl"}
+
+    fields = {
+        key: value
+        for key, value in reporte_data.items()
+        if key in allowed_fields
+    }
+
+    if not fields:
+        return None
+
+    set_clause = ", ".join(
+        f"{field} = %s" for field in fields
+    )
+
+    values = list(fields.values()) + [folio]
+
+    query = f"""
+        UPDATE Reporte
+        SET {set_clause}
+        WHERE folio = %s
+    """
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, values)
+
+    return await get_reporte_by_folio_with_status(conn, folio)
