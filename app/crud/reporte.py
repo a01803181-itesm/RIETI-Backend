@@ -3,7 +3,7 @@
 from asyncmy import Connection as MySQLConnection
 from pydantic import EmailStr
 from pydantic_extra_types.coordinate import Latitude, Longitude
-from app.schemas.reporte import Reporte, CantidadReportes, ReportePublic, ReporteConEstatus
+from app.schemas.reporte import Reporte, CantidadReportes, ReportePublic, ReporteConEstatus, ReporteConAlimentador
 from app.schemas.expediente import Expediente, Status
 from app.schemas.enums import RangoEdad, TipoTrabajo
 from app.core.logs import logger, SUCCESS
@@ -112,6 +112,36 @@ async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) ->
                     folioE=row[14] if row[14] is not None else "",
                     correoAl=row[15],
                     estatus=row[16] if row[16] is not None else "1_Registrado"
+                )
+
+            logger.warning(f"Reporte with folio {folio} not found")
+            return None
+    except Exception as e:
+        logger.error(f"Error finding reporte with folio {folio}: {e}")
+        return None
+
+
+async def get_reporte_by_folio_with_alimentador(conn: MySQLConnection, folio: str) -> ReporteConAlimentador | None:
+    query = """
+        SELECT
+            folio, a.nombre, a.ap_paterno, a.ap_materno
+        FROM Reporte r
+        LEFT JOIN Alimentador a ON a.correoAl = r.correoAl
+        WHERE folio = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (folio,))
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(SUCCESS, f"Reporte with folio {folio} successfully found and fetched")
+                return ReporteConAlimentador(
+                    folio=row[0],
+                    nombre=row[1] if row[1] is not None else "",
+                    ap_paterno=row[2] if row[2] is not None else "",
+                    ap_materno=row[3] if row[3] is not None else ""
                 )
 
             logger.warning(f"Reporte with folio {folio} not found")

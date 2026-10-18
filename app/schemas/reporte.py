@@ -111,6 +111,11 @@ class ReporteUpdate(BaseModel):
     correoAl: EmailStr | None = None
     estatus: str | None = None
 
+class ReporteConAlimentador(BaseModel):
+    folio: str
+    nombre: str | None
+    ap_paterno: str | None
+    ap_materno: str | None
 
 class ReporteConEstatus(BaseModel):
     """Modelo principal de reporte ciudadano sobre presunto caso de trabajo infantil.
