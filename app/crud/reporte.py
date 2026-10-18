@@ -111,7 +111,7 @@ async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) ->
                     correoU=row[13],
                     folioE=row[14] if row[14] is not None else "",
                     correoAl=row[15],
-                    estatus=row[16] if row[16] is not None else ""
+                    estatus=row[16] if row[16] is not None else "1_Registrado"
                 )
 
             logger.warning(f"Reporte with folio {folio} not found")
@@ -218,7 +218,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
                             correoU=row[13],
                             folioE=row[14] if row[14] is not None else "",
                             correoAl=row[15],
-                            estatus=row[16] if row[16] is not None else ""
+                            estatus=row[16] if row[16] is not None else "1_Registrado"
                         )
                     )
                 except Exception as row_error:
