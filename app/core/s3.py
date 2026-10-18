@@ -17,6 +17,7 @@ def subir_foto (folio:str, num_foto:int, foto:bytes) -> dict:
 
     s3 = boto3.client("s3", region_name = "us-east-1")
 
+    print ("Bucket:", settings.S3_BUCKET_NAME, flush= True)
     s3.put_object(
         Bucket = settings.S3_BUCKET_NAME,
         Key =ruta, 
