@@ -53,7 +53,7 @@ async def get_num_foto (conn:MySQLConnection, folio:str) -> int:
         except ValueError:
             continue
 
-        return max(nums, default=0) + 1
+    return max(nums, default=0) + 1
 
 async def get_evidencias_by_folio ( conn: MySQLConnection, folio:str):
     """Obteniendo todas las evidencias de un solo reporte"""
@@ -61,7 +61,7 @@ async def get_evidencias_by_folio ( conn: MySQLConnection, folio:str):
     query = """
     SELECT id, url, folio
     FROM Evidencia 
-    WHERE folo = %s
+    WHERE folio = %s
     ORDER BY id ASC
     """
 
