@@ -217,7 +217,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
                             detalles_adcionales=row[12] if row[12] is not None else "",
                             correoU=row[13],
                             folioE=row[14] if row[14] is not None else "",
-                            correoAl=row[15] if row[15] is not None else "",
+                            correoAl=row[15],
                             estatus=row[16] if row[16] is not None else ""
                         )
                     )
