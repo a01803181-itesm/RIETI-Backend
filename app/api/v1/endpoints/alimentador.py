@@ -184,6 +184,9 @@ async def create_new_alimentador(
         }
     }
 )
-async def read_all_alimentadores_by_municipio(municipio: str, db: MySQLConnection = Depends(get_db)) -> Any:
-    alimentadores = await get_all_alimentadores_by_municipio(municipio, db)
+async def read_all_alimentadores_by_municipio(
+    municipio: str, 
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    alimentadores = await get_all_alimentadores_by_municipio(db, municipio)
     return alimentadores

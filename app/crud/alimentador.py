@@ -6,6 +6,8 @@ from app.schemas.alimentador import Alimentador
 from app.core.logs import logger, SUCCESS
 from app.schemas.enums import Provider
 
+from fastapi import HTTPException, status
+
 async def get_alimentador(conn: MySQLConnection, alim_email: EmailStr) -> Alimentador | None:
     """Busca y recupera una autoridad alimentadora en la base de datos a partir de su correo electrónico.
 
@@ -155,7 +157,7 @@ async def get_all_alimentadores_by_municipio(conn: MySQLConnection, municipio: s
             correoAl, proveedor, telefono,
             nombre, ap_paterno, ap_materno, municipio
         FROM Alimentador
-        WHERE municipio = %s;
+        WHERE LOWER(municipio) = LOWER(%s);
     """
 
     try:
@@ -164,23 +166,38 @@ async def get_all_alimentadores_by_municipio(conn: MySQLConnection, municipio: s
 
             rows = await cur.fetchall()
 
-            if len(rows) > 0:
-                logger.log(SUCCESS, f"All alimentadores rows where successfully fetched and returned")
-                return [
-                    Alimentador(
-                        correoAl=row[0],
-                        proveedor=Provider(row[1]),
-                        telefono=row[2],
-                        nombre=row[3],
-                        ap_paterno=row[4],
-                        ap_materno=row[5],
-                        municipio=row[6]
-                    )
-                    for row in rows
-                ]
+            if not rows:
+                logger.warning(f"No se encontraron alimentadores para el municipio: {municipio}")
+                return []
 
-            logger.warning(f"'Alimentadores' with municipio {municipio} not found")
-            return []
+            alimentadores = []
+            for i, row in enumerate(rows):
+                try:
+                    alimentadores.append(
+                        Alimentador(
+                            correoAl=row[0],
+                            proveedor=Provider(row[1]),
+                            telefono=row[2],
+                            nombre=row[3],
+                            ap_paterno=row[4],
+                            ap_materno=row[5],
+                            municipio=row[6]
+                        )
+                    )
+                except Exception as row_error:
+                    logger.error(f"Error en la fila {i} ({row}: {row_error})")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Error en estructura de datos del alimentador en fila {i}"
+                    )
+            logger.log(SUCCESS, f"Se obtuvieron {len(alimentadores)} alimentadores exitosamente.")
+            return alimentadores
+    
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error during fetching alimentadores with municipio {municipio}: {e}")
-        return []
+        logger.error(f"Error durante la consulta de alimentadores en municipio '{municipio}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno al consultar los alimentadores en la base de datos."
+        )
