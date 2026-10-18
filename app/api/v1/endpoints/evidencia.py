@@ -58,8 +58,10 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
     }
 
 @router.get ("/by-folio/{folio}")
+
 async def obtener_evidencias_de_folio ( folio: str, db:MySQLConnection = Depends(get_db)):
     """Obtener las fotos de un reporte"""
+
     reporte = await get_reporte_by_folio(db, folio)
 
     if not reporte:
@@ -72,13 +74,14 @@ async def obtener_evidencias_de_folio ( folio: str, db:MySQLConnection = Depends
 
     return [
         {
-            "id": evidencias[0],
-            "url": obtener_url_de_evidencia(evidencias[1]),
-            "folio": evidencias[2]
+            "id": evidencia[0],
+            "url": obtener_url_de_foto(evidencia[1]),
+            "folio": evidencia[2]
         }
 
         for evidencia in evidencias
     ]
+
 
 @router.get("/{id}/url")
 
