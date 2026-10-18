@@ -3,8 +3,8 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from asyncmy import Connection as MySQLConnection 
 from app.core.db_connection import get_db
-from app.core.s3 import subir_foto
-from app.crud.reporte import get_reporte_by_folio
+from app.core.s3 import subir_foto, obtener_url_de_foto
+from app.crud.reporte import get_reporte_by_folio, get_evidencia
 from app.crud.evidencia import insert_new_evidencia
 
 router = APIRouter()
@@ -39,12 +39,13 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
     num_foto = 1
 
     try: 
-        print ("Incio de subir s3", flush= True)
+
         ruta = subir_foto(folio, num_foto, contenido)
-        print ("foto subida en s3", ruta, flush= True)
+
         evidencia_id = await insert_new_evidencia(db, folio, ruta)
-        print ("evidencia se guarda en swql", evidencia_id, flush= True)
+
     except Exception:
+
         raise HTTPException(
             status_code= 500, 
             detail= "No se pudo guardar la evidencia"
@@ -54,4 +55,25 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
         "id" : evidencia_id, 
         "folio": folio,
         "url": ruta 
+    }
+
+@router.get("/{id}/url")
+
+async def obtener_url_de_evidencia( id:int, db: MySQLConnection = Depends (get_db)): 
+    evidencia = await get_evidencia (db, id)
+
+    if not evidencia:
+        raise HTTPException(
+            status_code= 404, 
+            detail= "No se encontro la evidencia"
+        )
+
+    ruta = evidencia[1]
+
+    url = obtener_url_de_foto(ruta)
+
+    return {
+        "id": id,
+        "url": url,
+        "expira en": 300
     }
