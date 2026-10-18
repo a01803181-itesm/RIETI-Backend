@@ -4,8 +4,8 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from asyncmy import Connection as MySQLConnection 
 from app.core.db_connection import get_db
 from app.core.s3 import subir_foto, obtener_url_de_foto
-from app.crud.reporte import get_reporte_by_folio, get_evidencia
-from app.crud.evidencia import insert_new_evidencia
+from app.crud.reporte import get_reporte_by_folio
+from app.crud.evidencia import insert_new_evidencia, get_evidencia
 
 router = APIRouter()
 
