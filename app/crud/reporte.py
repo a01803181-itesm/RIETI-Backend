@@ -184,7 +184,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
             correoU, r.folioE, r.correoAl, estatus
         FROM Reporte r
-        RIGHT JOIN Expediente e ON e.folioE = r.folioE
+        LEFT JOIN Expediente e ON e.folioE = r.folioE
         ORDER BY dia DESC;
     """
 
