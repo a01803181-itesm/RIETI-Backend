@@ -147,3 +147,40 @@ async def insert_new_alimentador(conn: MySQLConnection, alimentador: Alimentador
     except Exception as e:
         logger.error(f"Error during alimentador insertion: {e}")
         return None
+
+
+async def get_all_alimentadores_by_municipio(conn: MySQLConnection, municipio: str) -> list[Alimentador]:
+    query = """
+        SELECT
+            correoAl, proveedor, telefono,
+            nombre, ap_paterno, ap_materno, municipio
+        FROM Alimentador
+        WHERE municipio = %s;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (municipio,))
+
+            rows = await cur.fetchall()
+
+            if len(rows) > 0:
+                logger.log(SUCCESS, f"All alimentadores rows where successfully fetched and returned")
+                return [
+                    Alimentador(
+                        correoAl=row[0],
+                        proveedor=Provider(row[1]),
+                        telefono=row[2],
+                        nombre=row[3],
+                        ap_paterno=row[4],
+                        ap_materno=row[5],
+                        municipio=row[6]
+                    )
+                    for row in rows
+                ]
+
+            logger.warning(f"'Alimentadores' with municipio {municipio} not found")
+            return []
+    except Exception as e:
+        logger.error(f"Error during fetching alimentadores with municipio {municipio}: {e}")
+        return []

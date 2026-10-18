@@ -4,7 +4,7 @@ from typing import Any
 from asyncmy import Connection as MySQLConnection
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
-from app.crud.alimentador import get_alimentador, get_all_alimentadores, insert_new_alimentador
+from app.crud.alimentador import get_alimentador, get_all_alimentadores, insert_new_alimentador, get_all_alimentadores_by_municipio
 from app.schemas.alimentador import Alimentador
 from app.core.db_connection import get_db
 
@@ -134,3 +134,36 @@ async def create_new_alimentador(
         )
 
     return new_alimentador
+
+# GET ALIMENTADOR POR MUNICIPIO
+@router.get(
+    "/municipio/{municipio}",
+    response_model=list[Alimentador],
+    summary="Obtener alimentador por municipio",
+    description="Consulta los detalles y jurisdicción municipal de todos los alimentadores mediante su municipio.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[Alimentador],
+            "description": "Alimentadores localizados exitosamente."
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "No existen alimentadores registrados con el municipio proporcionado."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar la base de datos."
+        }
+    }
+)
+async def read_alimentador_by_municipio(
+    municipio: str,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    alimentadores = await get_all_alimentadores_by_municipio(db, municipio)
+
+    if not alimentadores:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Alimentadores with municipio {municipio} not found"
+        )
+
+    return alimentadores
