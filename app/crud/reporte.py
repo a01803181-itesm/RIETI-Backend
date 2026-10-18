@@ -120,65 +120,6 @@ async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) ->
         logger.error(f"Error finding reporte with folio {folio}: {e}")
         return None
 
-# async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
-#     """Obtiene la lista completa de todos los reportes de trabajo infantil registrados en la plataforma.
-
-#     Args:
-#         conn (MySQLConnection): Conexión activa a la base de datos MySQL.
-
-#     Returns:
-#         list[Reporte]: Lista de instancias de Reporte, o una lista vacía si no hay registros.
-
-#     Raises:
-#         Exception: Si ocurre un error de comunicación o fallo en la consulta.
-#     """
-#     query = """
-#         SELECT
-#             folio, edad, dia, tipoTrabajo, numNinios, direccion, municipio,
-#             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
-#             correoU, folioE, correoAl
-#         FROM Reporte;
-#     """
-
-#     try:
-#         async with conn.cursor() as cur:
-#             await cur.execute(query)
-#             rows = await cur.fetchall()
-
-#             if len(rows) > 0:
-#                 logger.log(SUCCESS, "All reportes rows were successfully fetched and returned")
-#                 lista = []
-#                 for row in rows:
-#                     lista.append(
-#                         Reporte(
-#                             folio=row[0],
-#                             edad=RangoEdad(row[1]),
-#                             dia=row[2],
-#                             tipoTrabajo=TipoTrabajo(row[3]),
-#                             numNinios=row[4],
-#                             direccion=row[5],
-#                             municipio=row[6],
-#                             latitud=float(row[7]),
-#                             longitud=float(row[8]),
-#                             nombre=row[9],
-#                             ap_paterno=row[10],
-#                             ap_materno=row[11],
-#                             detalles_adcionales=row[12],
-#                             correoU=row[13],
-#                             folioE=row[14],
-#                             correoAl=row[15]
-#                         )
-#                     )
-#                 return lista
-
-#             logger.warning("'Reporte' DB entity is empty")
-#             return []
-#     except Exception as e:
-#         logger.error(f"Error fetching rows from 'Reporte' DB entity: {e}")
-#         return []
-#         # raise e
-
-
 async def get_all_reportes(conn: MySQLConnection) -> list[Reporte]:
     query = """
         SELECT
@@ -243,7 +184,7 @@ async def get_all_reportes_with_status(conn: MySQLConnection) -> list[ReporteCon
             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
             correoU, r.folioE, r.correoAl, estatus
         FROM Reporte r
-        JOIN Expediente e ON e.folioE = r.folioE
+        RIGHT JOIN Expediente e ON e.folioE = r.folioE
         ORDER BY dia DESC;
     """
 
