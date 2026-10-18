@@ -83,7 +83,7 @@ async def get_reporte_by_folio_with_status(conn: MySQLConnection, folio: str) ->
             latitud, longitud, nombre, ap_paterno, ap_materno, detalles_adcionales,
             correoU, r.folioE, r.correoAl, estatus
         FROM Reporte r
-        LEFT JOIN Expediente e ON e.folioE = r.folioE
+        RIGHT JOIN Expediente e ON e.folioE = r.folioE
         WHERE folio = %s;
     """
 
