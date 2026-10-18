@@ -136,34 +136,54 @@ async def create_new_alimentador(
     return new_alimentador
 
 # GET ALIMENTADOR POR MUNICIPIO
+# @router.get(
+#     "/municipio/{municipio}",
+#     response_model=list[Alimentador],
+#     summary="Obtener alimentador por municipio",
+#     description="Consulta los detalles y jurisdicción municipal de todos los alimentadores mediante su municipio.",
+#     responses={
+#         status.HTTP_200_OK: {
+#             "model": list[Alimentador],
+#             "description": "Alimentadores localizados exitosamente."
+#         },
+#         status.HTTP_404_NOT_FOUND: {
+#             "description": "No existen alimentadores registrados con el municipio proporcionado."
+#         },
+#         status.HTTP_500_INTERNAL_SERVER_ERROR: {
+#             "description": "Error interno al consultar la base de datos."
+#         }
+#     }
+# )
+# async def read_alimentador_by_municipio(
+#     municipio: str,
+#     db: MySQLConnection = Depends(get_db)
+# ) -> Any:
+#     alimentadores = await get_all_alimentadores_by_municipio(db, municipio)
+
+#     if not alimentadores:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail=f"Alimentadores with municipio {municipio} not found"
+#         )
+
+#     return alimentadores
+
+
 @router.get(
     "/municipio/{municipio}",
     response_model=list[Alimentador],
-    summary="Obtener alimentador por municipio",
-    description="Consulta los detalles y jurisdicción municipal de todos los alimentadores mediante su municipio.",
+    summary="Listar todos los alimentadores por municipio",
+    description="Recupera el listado completo de todas las autoridades y alimentadores registrados en el sistema por municipio.",
     responses={
         status.HTTP_200_OK: {
             "model": list[Alimentador],
-            "description": "Alimentadores localizados exitosamente."
-        },
-        status.HTTP_404_NOT_FOUND: {
-            "description": "No existen alimentadores registrados con el municipio proporcionado."
+            "description": "Listado de autoridades alimentadoras obtenido exitosamente."
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "description": "Error interno al consultar la base de datos."
+            "description": "Error interno de servidor o falla en la consulta de registros."
         }
     }
 )
-async def read_alimentador_by_municipio(
-    municipio: str,
-    db: MySQLConnection = Depends(get_db)
-) -> Any:
-    alimentadores = await get_all_alimentadores_by_municipio(db, municipio)
-
-    if not alimentadores:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Alimentadores with municipio {municipio} not found"
-        )
-
+async def read_all_alimentadores_by_municipio(municipio: str, db: MySQLConnection = Depends(get_db)) -> Any:
+    alimentadores = await get_all_alimentadores_by_municipio(municipio, db)
     return alimentadores
