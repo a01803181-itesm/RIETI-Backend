@@ -21,6 +21,7 @@ class Settings(BaseSettings):
         COGNITO_USER_POOL_ID (str): Identificador único del User Pool de AWS Cognito.
         ANDROID_APP_CLIENT_ID (str): Client ID de la aplicación Android en Cognito.
         ALLOWED_ORIGINS (list[str]): Orígenes permitidos para peticiones CORS.
+        S3_BUCKET_NAME (str): Nombre de la bucket s3 donde se almacenan las evidencias
     """
 
     PROJECT_NAME: str = "RIETI API"
@@ -34,6 +35,8 @@ class Settings(BaseSettings):
     AWS_COGNITO_REGION: str
     COGNITO_USER_POOL_ID: str
     ANDROID_APP_CLIENT_ID: str
+
+    S3_BUCKET_NAME: str
 
     ALLOWED_ORIGINS: list[str] = ['*']
 
