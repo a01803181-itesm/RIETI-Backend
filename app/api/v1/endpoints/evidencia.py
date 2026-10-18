@@ -5,7 +5,7 @@ from asyncmy import Connection as MySQLConnection
 from app.core.db_connection import get_db
 from app.core.s3 import subir_foto, obtener_url_de_foto
 from app.crud.reporte import get_reporte_by_folio
-from app.crud.evidencia import insert_new_evidencia, get_evidencia
+from app.crud.evidencia import insert_new_evidencia, get_evidencia, get_num_foto
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
             detail= "La foto supera 5MB"
         )
 
-    num_foto = 1
+    num_foto = await get_num_foto (db, folio)
 
     try: 
 

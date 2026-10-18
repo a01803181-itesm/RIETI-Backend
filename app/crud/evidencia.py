@@ -27,3 +27,30 @@ async def get_evidencia (conn:MySQLConnection, id: int):
     async with conn.cursor() as cur:
         await cur.execute(query, (id,))
         return await cur.fetchone()
+
+
+
+async def get_num_foto (conn:MySQLConnection, folio:str) -> int:
+    query = """
+    SELECT url 
+    FROM Evidencia
+    WHERE folio = %s
+    """
+    async with conn.cursor () as cur:
+        await cur.execute (query, (folio,))
+        evidencias = await cur.fetchall()
+
+    nums = []
+
+    for evidencia in evidencias:
+        ruta = evidencia[0]
+        nombre = ruta.rsplit("/", 1)[-1]
+
+        try:
+            num = int (nombre.rsplit("-", 1)[-1].replace (".jpg", ""))
+            nums.append(num)
+        
+        except ValueError:
+            continue
+
+        return max(nums, default=0) + 1
