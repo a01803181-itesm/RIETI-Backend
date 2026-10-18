@@ -996,7 +996,7 @@ async def read_reportes_por_autoridad_alimentador(
     return [{"categoria": c, "total": t} for c, t in data]
 
 @router.patch(
-    "/${folio}/estatus",
+    "/{folio}/estatus",
     response_model=ReporteConEstatus,
     status_code=status.HTTP_200_OK,
     summary="Actualizar parcialmente un reporte",
@@ -1046,4 +1046,4 @@ async def update_reporte(
 
     await db.commit()
 
-    return updated_reporte
+    return get_reporte_by_folio_with_status(db, folio)

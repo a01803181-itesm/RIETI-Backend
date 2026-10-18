@@ -1290,32 +1290,28 @@ async def update_reporte_in_db(
         conn: MySQLConnection,
         folio: str,
         reporte_data: dict
-) -> ReporteConEstatus | None:
-    
-    allowed_fields = {"estatus", "correoAl"}
+) -> bool:
 
-    fields = {
-        key: value
-        for key, value in reporte_data.items()
-        if key in allowed_fields
-    }
-
-    if not fields:
-        return None
-
-    set_clause = ", ".join(
-        f"{field} = %s" for field in fields
-    )
-
-    values = list(fields.values()) + [folio]
-
-    query = """
-        UPDATE Reporte
-        SET {set_clause}
-        WHERE folio = %s
-    """
+    correo_al = reporte_data.get("correoAl")
+    estatus = reporte_data.get("estatus")
 
     async with conn.cursor() as cur:
-        await cur.execute(query, values)
+        if correo_al is not None:
+            query_reporte = """
+                UPDATE Reporte 
+                SET correoAl = %s 
+                WHERE folio = %s;
+            """
+            await cur.execute(query_reporte, (correo_al, folio))
 
-    return await get_reporte_by_folio_with_status(conn, folio)
+        if estatus is not None:
+            query_expediente = """
+                UPDATE Expediente e
+                JOIN Reporte r ON e.folioE = r.folioE
+                SET e.estatus = %s
+                WHERE r.folio = %s;
+            """
+
+            await cur.execute(query_expediente, (estatus, folio))
+
+    return True
