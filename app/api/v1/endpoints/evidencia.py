@@ -5,7 +5,7 @@ from asyncmy import Connection as MySQLConnection
 from app.core.db_connection import get_db
 from app.core.s3 import subir_foto, obtener_url_de_foto
 from app.crud.reporte import get_reporte_by_folio
-from app.crud.evidencia import insert_new_evidencia, get_evidencia, get_num_foto
+from app.crud.evidencia import insert_new_evidencia, get_evidencia, get_num_foto, get_evidencias_by_folio
 
 router = APIRouter()
 
@@ -56,6 +56,29 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
         "folio": folio,
         "url": ruta 
     }
+
+@router.get ("/by-folio/{folio}")
+async def obtener_evidencias_de_folio ( folio: str, db:MySQLConnection = Depends(get_db)):
+    """Obtener las fotos de un reporte"""
+    reporte = await get_reporte_by_folio(db, folio)
+
+    if not reporte:
+        raise HTTPException(
+            status_code= 404, 
+            detail= "No se encontro reporte"
+        )
+
+    evidencias = await get_evidencias_by_folio(db, folio)
+
+    return [
+        {
+            "id": evidencias[0],
+            "url": obtener_url_de_evidencia(evidencias[1]),
+            "folio": evidencias[2]
+        }
+
+        for evidencia in evidencias
+    ]
 
 @router.get("/{id}/url")
 

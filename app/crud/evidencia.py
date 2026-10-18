@@ -54,3 +54,19 @@ async def get_num_foto (conn:MySQLConnection, folio:str) -> int:
             continue
 
         return max(nums, default=0) + 1
+
+async def get_evidencias_by_folio ( conn: MySQLConnection, folio:str):
+    """Obteniendo todas las evidencias de un solo reporte"""
+
+    query = """
+    SELECT id, url, folio
+    FROM Evidencia 
+    WHERE folo = %s
+    ORDER BY id ASC
+    """
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, (folio,))
+        evidencias = await cur.fetchall()
+
+    return evidencias 
