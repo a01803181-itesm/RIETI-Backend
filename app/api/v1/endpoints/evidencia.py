@@ -28,12 +28,12 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
             detail= "No es JPEG"
         )
 
-    contenido = await foto.read ( 5* 1024*1024 +1) #5 MB
+    contenido = await foto.read ( 11* 1024*1024 +1) #11 MB
 
-    if len(contenido)> 5*1024*1024:
+    if len(contenido)> 11*1024*1024:
         raise HTTPException(
             status_code= 413,
-            detail= "La foto supera 5MB"
+            detail= "La foto supera 11MB"
         )
 
     num_foto = await get_num_foto (db, folio)
