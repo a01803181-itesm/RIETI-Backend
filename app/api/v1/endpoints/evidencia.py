@@ -39,10 +39,11 @@ async def crear_evidencia( folio: str, foto:UploadFile = File (...), db: MySQLCo
     num_foto = 1
 
     try: 
+        print ("Incio de subir s3", flush= True)
         ruta = subir_foto(folio, num_foto, contenido)
-        
+        print ("foto subida en s3", ruta, flush= True)
         evidencia_id = await insert_new_evidencia(db, folio, ruta)
-
+        print ("evidencia se guarda en swql", evidencia_id, flush= True)
     except Exception:
         raise HTTPException(
             status_code= 500, 
