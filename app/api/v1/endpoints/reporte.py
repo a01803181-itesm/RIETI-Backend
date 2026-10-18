@@ -1032,18 +1032,23 @@ async def update_reporte(
             detail="No se proporcionaron campos para actualizar."
         )
 
-    updated_reporte = await update_reporte_in_db(
+    await update_reporte_in_db(
         db,
         folio,
         reporte_data
     )
 
-    if not updated_reporte:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Reporte not found"
-        )
-
     await db.commit()
 
-    return get_reporte_by_folio_with_status(db, folio)
+    try:
+        reporte_actualizado = await get_reporte_by_folio_with_status(db, folio)
+        if not reporte_actualizado:
+            raise HTTPException(
+                status_code=404,
+                detail="Reporte no encontrado.")
+        return reporte_actualizado
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al reconstruir la respuesta: {type(e).__name__} - {str(e)}"
+        )
