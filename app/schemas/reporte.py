@@ -213,7 +213,7 @@ class ReporteConEstatus(BaseModel):
         description="Folio del expediente administrativo asignado si ya fue canalizado.",
         examples=["EXP-2026-TOL-042"]
     )
-    correoAl: EmailStr | None = Field(
+    correoAl: str | None = Field(
         default=None,
         description="Correo institucional de la autoridad o alimentador que da seguimiento.",
         examples=["alimentador.toluca@rieti.org"]
