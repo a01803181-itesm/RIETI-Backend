@@ -670,22 +670,14 @@ async def get_cantidad_reportes_por_estatus(conn: MySQLConnection) -> CantidadRe
         Exception: Si se produce un error en la evaluación de subconsultas simultáneas.
     """
     query = """
-        SELECT COUNT(folio),
-            (SELECT COUNT(folio)
-                FROM Reporte r
-                JOIN Expediente e ON e.folioE = r.folioE
-                WHERE estatus = "5_Concluido"),
-            (SELECT COUNT(folio)
-                            FROM Reporte r
-                            JOIN Expediente e ON e.folioE = r.folioE
-                            WHERE estatus = "3_En_seguimiento"
-                            OR estatus = "2_En_revision"),
-            (SELECT COUNT(folio)
-                            FROM Reporte r
-                            JOIN Expediente e ON e.folioE = r.folioE
-                            WHERE estatus = "1_Registrado")
-        FROM Reporte;
-    """
+    SELECT
+        COUNT(*) AS total,
+        COALESCE(SUM(e.estatus = '5_Concluido'), 0) AS completados,
+        COALESCE(SUM(e.estatus IN ('2_En_revision', '3_En_seguimiento')), 0) AS en_proceso,
+        COALESCE(SUM(COALESCE(e.estatus, '1_Registrado') = '1_Registrado'), 0) AS pendientes
+    FROM Reporte r
+    LEFT JOIN Expediente e ON r.folioE = e.folioE;
+"""
 
     try:
         async with conn.cursor() as cur:
