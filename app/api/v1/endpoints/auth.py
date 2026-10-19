@@ -62,6 +62,8 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
     admin = await get_admin(db,correo)
     alimentador = await get_alimentador(db, correo)
 
+    print("Username de Cognito:", repr(usuario.get("username")))
+
     proveedor = obtener_proveedor(usuario)
     print("Proveedor detectado:", proveedor.value)
     print("Admin encontrado:", admin is not None)
