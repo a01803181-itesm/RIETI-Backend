@@ -6,7 +6,7 @@ from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
 
 from app.crud import reporte
-from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte, get_all_reportes_with_status, get_reporte_by_folio_with_status
+from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte, get_all_reportes_with_status, get_reporte_by_folio_with_status, get_reporte_by_folio_with_alimentador
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
 from app.crud.reporte import get_reportes_pendientes_ultima_semana, get_reportes_por_autoridad, get_reportes_por_municipio, get_reportes_por_status
 from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, get_cantidad_reportes_por_estatus_especifico, get_cantidad_reportes_por_estatus
@@ -14,7 +14,7 @@ from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
 from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador,get_reportes_por_tipo_trabajo, get_reportes_por_tipo_trabajo_por_alimentador
 from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db
-from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate
+from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate, ReporteConAlimentador
 from app.core.db_connection import get_db
 
 router = APIRouter()
@@ -538,6 +538,43 @@ async def read_reporte_by_folio_with_status(
         )
 
     return reporte_obj
+
+
+@router.get(
+    "/detalles/alimentador/{folio}",
+    response_model=ReporteConAlimentador,
+    summary="Obtener reporte por folio",
+    description="Busca y devuelve la información completa de un reporte específico a partir de su folio alfanumérico identificador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": ReporteConAlimentador,
+            "description": "Reporte localizado exitosamente."
+        },
+        status.HTTP_404_NOT_FOUND: {
+            "description": "No existe ningún reporte registrado con el folio solicitado."
+        },
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {
+            "description": "Identificador de folio no procesable."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al consultar la base de datos."
+        }
+    }
+)
+async def read_reporte_by_folio_with_alimentador(
+    folio: str,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    reporte_obj = await get_reporte_by_folio_with_alimentador(db, folio)
+
+    if not reporte_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Reporte with folio {folio} not found"
+        )
+
+    return reporte_obj
+
 
 @router.get(
     "/by-user/{user_email}",
