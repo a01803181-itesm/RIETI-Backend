@@ -23,8 +23,8 @@ class Expediente(BaseModel):
         description="Dependencia, delegación o municipio donde se procesa el caso.",
         examples=["DIF Municipal Toluca - Procuraduría de Protección"]
     )
-    descripcion: str = Field(
-        ...,
+    descripcion: str | None = Field(
+        None,
         description="Descripción detallada de la intervención y medidas de protección implementadas.",
         examples=["Expediente iniciado tras confirmación de avistamiento; visita domiciliaria programada."]
     )
@@ -32,8 +32,8 @@ class Expediente(BaseModel):
         ...,
         description="Estado administrativo actual dentro del flujo de atención del expediente."
     )
-    correoAl: EmailStr = Field(
-        ...,
+    correoAl: EmailStr | None = Field(
+        None,
         description="Correo institucional de la autoridad o alimentador asignado.",
         examples=["alimentador.toluca@rieti.org"]
     )
