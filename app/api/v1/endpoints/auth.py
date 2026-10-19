@@ -63,6 +63,9 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
     alimentador = await get_alimentador(db, correo)
 
     proveedor = obtener_proveedor(usuario)
+    print("Proveedor detectado:", proveedor.value)
+    print("Admin encontrado:", admin is not None)
+    print("Proveedor en BD:", admin.proveedor.value if admin else None) #pruebas 
 
     es_Admin= (admin is not None and admin.proveedor == proveedor)
 
