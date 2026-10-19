@@ -1058,6 +1058,8 @@ async def read_reportes_por_autoridad_alimentador(
         }
     }
 )
+
+
 async def update_reporte(
     folio: str,
     reporte: ReporteUpdate,
@@ -1074,32 +1076,49 @@ async def update_reporte(
             detail="No se proporcionaron campos para actualizar."
         )
 
-    await update_reporte_in_db(
-        db,
-        folio,
-        reporte_data
-    )
+    try:
+        await db.begin()
 
-    comentario = reporte_data.get("comentario")
-    if comentario and comentario.strip():
-        correo_admin = usuario.get("email")
-        if correo_admin:
-            await insert_comentario_admin(
-                db,
-                correo_ad=correo_admin,
-                folio=folio,
-                descripcion=comentario.strip()
-            )
+        await update_reporte_in_db(
+            db,
+            folio,
+            reporte_data
+        )
 
-    await db.commit()
+        comentario = reporte_data.get("comentario")
+
+        if comentario and comentario.strip():
+            correo_admin = usuario.get("email")
+
+            if correo_admin:
+                await insert_comentario_admin(
+                    db,
+                    correo_ad=correo_admin,
+                    folio=folio,
+                    descripcion=comentario.strip()
+                )
+        await db.commit()
+
+    except Exception:
+        await db.rollback()
+        raise
 
     try:
-        reporte_actualizado = await get_reporte_by_folio_with_status(db, folio)
+        reporte_actualizado = await get_reporte_by_folio_with_status(
+            db,
+            folio
+        )
+
         if not reporte_actualizado:
             raise HTTPException(
                 status_code=404,
-                detail="Reporte no encontrado.")
+                detail="Reporte no encontrado."
+            )
+
         return reporte_actualizado
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=500,

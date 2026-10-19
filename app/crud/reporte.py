@@ -1326,22 +1326,68 @@ async def update_reporte_in_db(
     estatus = reporte_data.get("estatus")
 
     async with conn.cursor() as cur:
-        if correo_al is not None:
-            query_reporte = """
-                UPDATE Reporte 
-                SET correoAl = %s 
-                WHERE folio = %s;
+
+        await cur.execute (
             """
-            await cur.execute(query_reporte, (correo_al, folio))
+            SELECT folioE, municipio
+            FROM Reporte
+            WHERE folio = %s
+            FOR UPDATE;
+            """,
+            (folio,)
+        )
+
+        row = await cur.fetchone()
+
+        if row is None:
+            raise HTTPException(
+                status_code=404,
+                detail= "El reporte no existe"
+            )
+
+        folio_expendiente = row[0]
+        municipio = row[1]
+
+        if "correoAl" in reporte_data:
+            await cur.execute(
+                """
+                UPDATE Reporte
+                SET correoAl = %s
+                WHERE folio = %s;
+                """,
+                (correo_al, folio)
+            )
 
         if estatus is not None:
-            query_expediente = """
-                UPDATE Expediente e
-                JOIN Reporte r ON e.folioE = r.folioE
-                SET e.estatus = %s
-                WHERE r.folio = %s;
-            """
+            if folio_expendiente is None:
 
-            await cur.execute(query_expediente, (estatus, folio))
+                folio_expendiente =  f"EXP-{folio}"
+
+                await cur.execute(
+                    """
+                    INSERT INTO Expediente (folioE, lugar, estatus)
+                    VALUES (%s, %s, %s);
+                    """,
+                    (folio_expendiente, municipio, estatus)
+                )
+
+                await cur.execute(
+                    """
+                    UPDATE Reporte
+                    SET folioE = %s
+                    WHERE folio = %s;
+                    """,
+                    (folio_expendiente, folio)
+                )
+
+            else:
+                await cur.execute(
+                    """
+                    UPDATE Expediente
+                    SET estatus = %s
+                    WHERE folioE = %s;
+                    """,
+                    (estatus, folio_expendiente)
+                )
 
     return True
