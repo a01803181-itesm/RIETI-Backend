@@ -1454,3 +1454,52 @@ async def get_reportes_con_estatus_por_alimentador(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
         )
+        
+async def get_cantidad_reportes_por_estatus_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> CantidadReportes:
+    """Calcula las métricas consolidadas (total, completados, en proceso y pendientes)
+    de reportes filtrados únicamente por el municipio asignado al alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
+        correo_al (str): Correo del alimentador para filtrar por su municipio.
+
+    Returns:
+        CantidadReportes: Objeto Pydantic con total, completados, en_proceso y pendientes.
+    """
+    query = """
+        SELECT
+            COUNT(r.folio) AS total,
+            COALESCE(SUM(e.estatus = '5_Concluido'), 0) AS completados,
+            COALESCE(SUM(e.estatus IN ('2_En_revision', '3_En_seguimiento')), 0) AS en_proceso,
+            COALESCE(SUM(COALESCE(e.estatus, '1_Registrado') = '1_Registrado'), 0) AS pendientes
+        FROM Reporte r
+        JOIN Alimentador al ON al.municipio = r.municipio
+        LEFT JOIN Expediente e ON r.folioE = e.folioE
+        WHERE al.correoAl = %s;
+    """
+
+    try:
+        async with conn.cursor(dictionary=True) as cur:
+            await cur.execute(query, (correo_al,))
+            row = await cur.fetchone()
+
+            if row:
+                logger.log(
+                    SUCCESS,
+                    f"Consolidated metrics successfully fetched for alimentador {correo_al}"
+                )
+                return CantidadReportes(
+                    total=int(row["total"] or 0),
+                    completados=int(row["completados"] or 0),
+                    en_proceso=int(row["en_proceso"] or 0),
+                    pendientes=int(row["pendientes"] or 0)
+                )
+
+            return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
+    except Exception as e:
+        logger.error(
+            f"Error fetching consolidated metrics for alimentador {correo_al}: {e}"
+        )
+        return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)

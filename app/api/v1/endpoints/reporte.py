@@ -15,7 +15,7 @@ from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, g
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
 from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador,get_reportes_por_tipo_trabajo, get_reportes_por_tipo_trabajo_por_alimentador
-from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db, get_reportes_con_estatus_por_alimentador
+from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db, get_reportes_con_estatus_por_alimentador,get_cantidad_reportes_por_estatus_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate, ReporteConAlimentador
 from app.core.db_connection import get_db
 
@@ -1148,3 +1148,26 @@ async def read_reportes_con_estado_por_alimentador(
     """Recupera la totalidad de reportes del municipio del alimentador con su estatus."""
     reportes = await get_reportes_con_estatus_por_alimentador(db, correo_al)
     return reportes
+
+@router.get(
+    "/por-estatus/cantidad/por-alimentador/{correo_al}",
+    response_model=CantidadReportes,
+    summary="Métricas consolidadas de reportes por municipio del alimentador",
+    description="Proporciona las métricas cuantitativas consolidadas (totales, completados, en proceso y pendientes) del municipio del alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": CantidadReportes,
+            "description": "Métricas consolidadas calculadas exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno al calcular las métricas consolidadas."
+        }
+    }
+)
+async def read_cantidad_reportes_por_estatus_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Entrega los conteos consolidados de reportes por municipio del alimentador."""
+    data = await get_cantidad_reportes_por_estatus_por_alimentador(db, correo_al)
+    return data
