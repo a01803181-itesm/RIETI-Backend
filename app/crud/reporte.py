@@ -1459,14 +1459,7 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
     conn: MySQLConnection, correo_al: str
 ) -> CantidadReportes:
     """Calcula las métricas consolidadas (total, completados, en proceso y pendientes)
-    de reportes filtrados únicamente por el municipio asignado al alimentador.
-
-    Args:
-        conn (MySQLConnection): Conexión activa a la base de datos MySQL.
-        correo_al (str): Correo del alimentador para filtrar por su municipio.
-
-    Returns:
-        CantidadReportes: Objeto Pydantic con total, completados, en_proceso y pendientes.
+    de reportes filtrados por el municipio asignado al alimentador.
     """
     query = """
         SELECT
@@ -1474,8 +1467,8 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
             COALESCE(SUM(e.estatus = '5_Concluido'), 0) AS completados,
             COALESCE(SUM(e.estatus IN ('2_En_revision', '3_En_seguimiento')), 0) AS en_proceso,
             COALESCE(SUM(COALESCE(e.estatus, '1_Registrado') = '1_Registrado'), 0) AS pendientes
-        FROM Reporte r
-        JOIN Alimentador al ON al.municipio = r.municipio
+        FROM Alimentador al
+        JOIN Reporte r ON r.municipio = al.municipio OR r.municipio LIKE CONCAT('%', al.municipio, '%')
         LEFT JOIN Expediente e ON r.folioE = e.folioE
         WHERE al.correoAl = %s;
     """
