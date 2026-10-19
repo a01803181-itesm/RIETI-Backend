@@ -555,11 +555,11 @@ async def get_reportes_pendientes_ultima_semana(conn: MySQLConnection) -> int:
         Exception: Si ocurre un error durante el filtrado por fecha y estatus en la consulta.
     """
     query = """
-        SELECT COUNT(folio)
+        SELECT COUNT(r.folio)
         FROM Reporte r
-        JOIN Expediente e ON e.folioE = r.folioE
-        WHERE DATEDIFF(CURDATE(), dia) <= 7
-        AND estatus != "5_Concluido";
+        LEFT JOIN Expediente e ON e.folioE = r.folioE
+        WHERE r.dia >= NOW() - INTERVAL 7 DAY
+        AND (e.estatus IS NULL OR e.estatus != '5_Concluido');
     """
 
     try:
