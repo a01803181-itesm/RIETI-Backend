@@ -1383,3 +1383,74 @@ async def update_reporte_in_db(
                 )
 
     return True
+
+async def get_reportes_con_estatus_por_alimentador(
+    conn: MySQLConnection, correo_al: str
+) -> list[ReporteConEstatus]:
+    """Recupera la lista de reportes con su estatus, filtrados por el municipio del alimentador.
+
+    Args:
+        conn (MySQLConnection): Conexión activa a MySQL.
+        correo_al (str): Correo del alimentador para filtrar por municipio.
+
+    Returns:
+        list[ReporteConEstatus]: Lista de reportes pertenecientes a su municipio.
+    """
+    query = """
+        SELECT
+            r.folio, r.edad, r.dia, r.tipoTrabajo, r.numNinios, r.direccion, r.municipio,
+            r.latitud, r.longitud, r.nombre, r.ap_paterno, r.ap_materno, r.detalles_adcionales,
+            r.correoU, r.folioE, r.correoAl, e.estatus
+        FROM Reporte r
+        JOIN Alimentador al ON al.municipio = r.municipio
+        LEFT JOIN Expediente e ON e.folioE = r.folioE
+        WHERE al.correoAl = %s
+        ORDER BY r.dia DESC;
+    """
+
+    try:
+        async with conn.cursor() as cur:
+            await cur.execute(query, (correo_al,))
+            rows = await cur.fetchall()
+
+            if not rows:
+                return []
+
+            lista = []
+            for i, row in enumerate(rows):
+                try:
+                    lista.append(
+                        ReporteConEstatus(
+                            folio=row[0],
+                            edad=RangoEdad(row[1]),
+                            dia=row[2],
+                            tipoTrabajo=TipoTrabajo(row[3]),
+                            numNinios=row[4] if row[4] is not None else None,
+                            direccion=row[5],
+                            municipio=row[6],
+                            latitud=float(row[7]),
+                            longitud=float(row[8]),
+                            nombre=row[9] if row[9] is not None else "",
+                            ap_paterno=row[10] if row[10] is not None else "",
+                            ap_materno=row[11] if row[11] is not None else "",
+                            detalles_adcionales=row[12] if row[12] is not None else "",
+                            correoU=row[13],
+                            folioE=row[14] if row[14] is not None else "",
+                            correoAl=row[15] if row[15] is not None else "",
+                            estatus=row[16] if row[16] is not None else "1_Registrado"
+                        )
+                    )
+                except Exception as row_error:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Fallo en la fila {i} con datos {row}: {type(row_error).__name__} - {str(row_error)}"
+                    )
+            return lista
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error general en la consulta SQL: {type(e).__name__} - {str(e)}"
+        )

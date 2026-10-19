@@ -15,7 +15,7 @@ from app.crud.reporte import get_reportes_por_tiempo, get_reportes_rango_hora, g
 from app.crud.reporte import get_conteo_expedientes_por_municipio, get_reportes_por_tiempo_por_alimentador,get_reportes_rango_hora_por_alimentador
 from app.crud.reporte import get_coordenadas_reportes_por_alimentador, get_promedio_de_resolucion_por_alimentador,get_reportes_pendientes_ultima_semana_por_alimentador
 from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,get_porcentaje_reportes_pendientes_por_alimentador,get_reportes_por_tipo_trabajo, get_reportes_por_tipo_trabajo_por_alimentador
-from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db
+from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db, get_reportes_con_estatus_por_alimentador
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate, ReporteConAlimentador
 from app.core.db_connection import get_db
 
@@ -1124,3 +1124,27 @@ async def update_reporte(
             status_code=500,
             detail=f"Error al reconstruir la respuesta: {type(e).__name__} - {str(e)}"
         )
+        
+        
+@router.get(
+    "/detalles/estatus/por-alimentador/{correo_al}",
+    response_model=list[ReporteConEstatus],
+    summary="Listar reportes con estatus por municipio del alimentador",
+    description="Recupera la lista detallada de reportes registrados con su estatus, filtrados únicamente por el municipio asignado al alimentador.",
+    responses={
+        status.HTTP_200_OK: {
+            "model": list[ReporteConEstatus],
+            "description": "Listado de reportes por municipio obtenido exitosamente."
+        },
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {
+            "description": "Error interno del servidor al consultar los reportes."
+        }
+    }
+)
+async def read_reportes_con_estado_por_alimentador(
+    correo_al: EmailStr,
+    db: MySQLConnection = Depends(get_db)
+) -> Any:
+    """Recupera la totalidad de reportes del municipio del alimentador con su estatus."""
+    reportes = await get_reportes_con_estatus_por_alimentador(db, correo_al)
+    return reportes
