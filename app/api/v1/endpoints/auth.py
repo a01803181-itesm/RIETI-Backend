@@ -62,9 +62,11 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
     admin = await get_admin(db,correo)
     alimentador = await get_alimentador(db, correo)
 
-    es_Admin= (admin is not None and admin.proveedor == Provider.COGNITO)
+    proveedor = obtener_proveedor(usuario)
 
-    es_Alimentador =( alimentador is not None and alimentador.proveedor == Provider.COGNITO)
+    es_Admin= (admin is not None and admin.proveedor == proveedor)
+
+    es_Alimentador =( alimentador is not None  and alimentador.proveedor == proveedor)
 
     if es_Admin:
         rol = "admin"
@@ -83,3 +85,11 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
         "correo": correo,
         "rol": rol
     }
+
+def obtener_proveedor (usuario:dict) -> Provider:
+    username = usuario.get("username")
+
+    if isinstance(username, str) and username.startswith("Google_"):
+        return Provider.GOOGLE
+
+    return Provider.COGNITO
