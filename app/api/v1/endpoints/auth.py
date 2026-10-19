@@ -71,9 +71,11 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
 
     if es_Admin:
         rol = "admin"
+        cuenta = admin
 
     elif es_Alimentador:
         rol = "alimentador"
+        cuenta = alimentador
 
     else: 
         raise HTTPException(
@@ -81,10 +83,19 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
             detail="Usuario sin autorización"
         )
 
+    nombre_completo = " ".join(
+        parte for parte in [
+            cuenta.nombre,
+            cuenta.ap_paterno,
+            cuenta.ap_materno
+        ] if parte
+    )
+
     return {
         "sub": usuario["sub"],
         "correo": correo,
-        "rol": rol
+        "rol": rol,
+        "nombre": nombre_completo
     }
 
 def obtener_proveedor (usuario:dict) -> Provider:
