@@ -62,12 +62,8 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
     admin = await get_admin(db,correo)
     alimentador = await get_alimentador(db, correo)
 
-    print("Username de Cognito:", repr(usuario.get("username")))
 
     proveedor = obtener_proveedor(usuario)
-    print("Proveedor detectado:", proveedor.value)
-    print("Admin encontrado:", admin is not None)
-    print("Proveedor en BD:", admin.proveedor.value if admin else None) #pruebas 
 
     es_Admin= (admin is not None and admin.proveedor == proveedor)
 
@@ -94,7 +90,7 @@ async def get_identity(usuario: dict = Depends(get_dashboard_user), credentials:
 def obtener_proveedor (usuario:dict) -> Provider:
     username = usuario.get("username")
 
-    if isinstance(username, str) and username.startswith("Google_"):
+    if isinstance(username, str) and username.startswith("google_"):
         return Provider.GOOGLE
 
     return Provider.COGNITO
