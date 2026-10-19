@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import EmailStr
 from asyncmy import Connection as MySQLConnection
 
+from app.crud.admin import insert_comentario_admin
+
 from app.crud import reporte
 from app.crud.reporte import get_reporte_by_folio, get_all_reportes, insert_new_reporte, get_all_reportes_with_status, get_reporte_by_folio_with_status, get_reporte_by_folio_with_alimentador
 from app.crud.reporte import get_coordenadas_reportes, get_porcentaje_reportes_en_proceso, get_porcentaje_reportes_pendientes, get_promedio_de_resolucion
@@ -16,6 +18,8 @@ from app.crud.reporte import get_porcentaje_reportes_en_proceso_por_alimentador,
 from app.crud.reporte import get_reportes_por_autoridad_por_alimentador, update_reporte_in_db
 from app.schemas.reporte import Reporte, CoordenadaReporte, CategoriaTotal, CantidadReportes, Data, DataInt, ReportePublic, ReporteConEstatus, ReporteUpdate, ReporteConAlimentador
 from app.core.db_connection import get_db
+
+from app.api.v1.endpoints.auth import get_dashboard_user
 
 router = APIRouter()
 
@@ -1057,6 +1061,7 @@ async def read_reportes_por_autoridad_alimentador(
 async def update_reporte(
     folio: str,
     reporte: ReporteUpdate,
+    usuario: dict = Depends(get_dashboard_user),
     db: MySQLConnection = Depends(get_db)
 ) -> Any:
     """Actualiza parcialmente un reporte existente."""
@@ -1074,6 +1079,17 @@ async def update_reporte(
         folio,
         reporte_data
     )
+
+    comentario = reporte_data.get("comentario")
+    if comentario and comentario.strip():
+        correo_admin = usuario.get("email")
+        if correo_admin:
+            await insert_comentario_admin(
+                db,
+                correo_ad=correo_admin,
+                folio=folio,
+                descripcion=comentario.strip()
+            )
 
     await db.commit()
 

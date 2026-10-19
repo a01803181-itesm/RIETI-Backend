@@ -110,6 +110,7 @@ class Reporte(BaseModel):
 class ReporteUpdate(BaseModel):
     correoAl: EmailStr | None = None
     estatus: str | None = None
+    comentario: str | None = None
 
 class ReporteConAlimentador(BaseModel):
     folio: str

@@ -143,3 +143,19 @@ async def insert_new_admin(conn: MySQLConnection, admin: Admin) -> Admin | None:
     except Exception as e:
         logger.error(f"Error during new admin insertion: {e}")
         return None
+
+async def insert_comentario_admin(
+    conn: MySQLConnection,
+    correo_ad: str,
+    folio: str,
+    descripcion: str
+) -> bool:
+    query = """
+        INSERT INTO AdminReporte (correoAd, folio, descripcion)
+        VALUES (%s, %s, %s)
+        ON DUPLICATE KEY UPDATE descripcion = VALUES(descripcion);
+    """
+
+    async with conn.cursor() as cur:
+        await cur.execute(query, (correo_ad, folio, descripcion))
+    return True
