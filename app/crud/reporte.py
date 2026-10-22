@@ -1495,4 +1495,9 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
             return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
             
     except Exception as e:
+        # ¡ESTO ES CLAVE PARA DEBUGGEAR! 
+        print(f"================ ERROR SQL ================")
+        print(f"Error detectado: {e}")
+        print(f"===========================================")
+        
         return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
