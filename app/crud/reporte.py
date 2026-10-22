@@ -1458,35 +1458,33 @@ async def get_reportes_con_estatus_por_alimentador(
 async def get_cantidad_reportes_por_estatus_por_alimentador(
     conn: MySQLConnection, correo_al: str
 ) -> CantidadReportes:
-    """Calcula las métricas consolidadas (total, completados, en proceso y pendientes)
-    de reportes filtrados por el municipio asignado al alimentador.
-    """
-  
-    query = """
-        SELECT
-            COUNT(r.folio) AS total,
-            COALESCE(SUM(CASE WHEN e.estatus = '5_Concluido' THEN 1 ELSE 0 END), 0) AS completados,
-            COALESCE(SUM(CASE WHEN e.estatus IN ('2_En_revision', '3_En_seguimiento') THEN 1 ELSE 0 END), 0) AS en_proceso,
-            COALESCE(SUM(CASE WHEN e.estatus IS NULL OR e.estatus = '1_Registrado' THEN 1 ELSE 0 END), 0) AS pendientes
-        FROM Alimentador al
-        JOIN Reporte r 
-            ON UPPER(TRIM(al.municipio)) = UPPER(r.municipio) 
-            OR UPPER(TRIM(al.municipio)) LIKE CONCAT('%', UPPER(r.municipio), '%')
-        LEFT JOIN Expediente e 
-            ON r.folioE = e.folioE
-        WHERE al.correoAl = %s;
-    """
-
     try:
         async with conn.cursor(dictionary=True) as cur:
-            await cur.execute(query, (correo_al,))
+            # 1. Obtenemos el municipio directamente
+            await cur.execute("SELECT municipio FROM Alimentador WHERE correoAl = %s;", (correo_al,))
+            alimentador = await cur.fetchone()
+
+            if not alimentador:
+                return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
+
+            municipio_al = alimentador["municipio"].strip()
+
+            # 2. Consultamos la tabla Reporte sin JOIN a Alimentador
+            query = """
+                SELECT
+                    COUNT(r.folio) AS total,
+                    COALESCE(SUM(CASE WHEN e.estatus = '5_Concluido' THEN 1 ELSE 0 END), 0) AS completados,
+                    COALESCE(SUM(CASE WHEN e.estatus IN ('2_En_revision', '3_En_seguimiento') THEN 1 ELSE 0 END), 0) AS en_proceso,
+                    COALESCE(SUM(CASE WHEN e.estatus IS NULL OR e.estatus = '1_Registrado' THEN 1 ELSE 0 END), 0) AS pendientes
+                FROM Reporte r
+                LEFT JOIN Expediente e ON r.folioE = e.folioE
+                WHERE r.municipio = %s;
+            """
+            
+            await cur.execute(query, (municipio_al,))
             row = await cur.fetchone()
 
             if row and row["total"] > 0:
-                logger.log(
-                    SUCCESS,
-                    f"Consolidated metrics successfully fetched for alimentador {correo_al}"
-                )
                 return CantidadReportes(
                     total=int(row["total"]),
                     completados=int(row["completados"]),
@@ -1497,7 +1495,4 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
             return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
             
     except Exception as e:
-        logger.error(
-            f"Error fetching consolidated metrics for alimentador {correo_al}: {e}"
-        )
         return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
