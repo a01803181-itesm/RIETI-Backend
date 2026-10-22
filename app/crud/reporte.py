@@ -1461,15 +1461,19 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
     """Calcula las métricas consolidadas (total, completados, en proceso y pendientes)
     de reportes filtrados por el municipio asignado al alimentador.
     """
+  
     query = """
         SELECT
             COUNT(r.folio) AS total,
-            COALESCE(SUM(e.estatus = '5_Concluido'), 0) AS completados,
-            COALESCE(SUM(e.estatus IN ('2_En_revision', '3_En_seguimiento')), 0) AS en_proceso,
-            COALESCE(SUM(COALESCE(e.estatus, '1_Registrado') = '1_Registrado'), 0) AS pendientes
+            COALESCE(SUM(CASE WHEN e.estatus = '5_Concluido' THEN 1 ELSE 0 END), 0) AS completados,
+            COALESCE(SUM(CASE WHEN e.estatus IN ('2_En_revision', '3_En_seguimiento') THEN 1 ELSE 0 END), 0) AS en_proceso,
+            COALESCE(SUM(CASE WHEN e.estatus IS NULL OR e.estatus = '1_Registrado' THEN 1 ELSE 0 END), 0) AS pendientes
         FROM Alimentador al
-        JOIN Reporte r ON r.municipio = al.municipio OR r.municipio LIKE CONCAT('%', al.municipio, '%')
-        LEFT JOIN Expediente e ON r.folioE = e.folioE
+        JOIN Reporte r 
+            ON UPPER(TRIM(al.municipio)) = UPPER(r.municipio) 
+            OR UPPER(TRIM(al.municipio)) LIKE CONCAT('%', UPPER(r.municipio), '%')
+        LEFT JOIN Expediente e 
+            ON r.folioE = e.folioE
         WHERE al.correoAl = %s;
     """
 
@@ -1478,19 +1482,20 @@ async def get_cantidad_reportes_por_estatus_por_alimentador(
             await cur.execute(query, (correo_al,))
             row = await cur.fetchone()
 
-            if row:
+            if row and row["total"] > 0:
                 logger.log(
                     SUCCESS,
                     f"Consolidated metrics successfully fetched for alimentador {correo_al}"
                 )
                 return CantidadReportes(
-                    total=int(row["total"] or 0),
-                    completados=int(row["completados"] or 0),
-                    en_proceso=int(row["en_proceso"] or 0),
-                    pendientes=int(row["pendientes"] or 0)
+                    total=int(row["total"]),
+                    completados=int(row["completados"]),
+                    en_proceso=int(row["en_proceso"]),
+                    pendientes=int(row["pendientes"])
                 )
 
             return CantidadReportes(total=0, completados=0, en_proceso=0, pendientes=0)
+            
     except Exception as e:
         logger.error(
             f"Error fetching consolidated metrics for alimentador {correo_al}: {e}"
